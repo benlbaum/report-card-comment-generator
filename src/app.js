@@ -26,6 +26,8 @@ let pendingBankImport = null;
 let bankImportFilename = '';
 let orderDraft = null;
 let draggedOrderIndex = null;
+let phraseDrag = null;
+const reorderGrip = '<svg aria-hidden="true" width="20" height="24" viewBox="0 0 20 24" fill="currentColor"><circle cx="6" cy="6" r="1.5"/><circle cx="14" cy="6" r="1.5"/><circle cx="6" cy="12" r="1.5"/><circle cx="14" cy="12" r="1.5"/><circle cx="6" cy="18" r="1.5"/><circle cx="14" cy="18" r="1.5"/></svg>';
 const current = () => state.students.find(s => s.id === currentId);
 const displayName = s => s.fullName || 'New student';
 
@@ -345,8 +347,36 @@ function renderStudentEditor(students) {
 function renderRoster() {
   $('className').value = state.className;
   $('rosterSummary').textContent = `${state.students.length} ${state.students.length === 1 ? 'student' : 'students'}`;
+  $('rosterSort').value = '';
+  $('rosterSort').disabled = state.students.length < 2;
   renderStudentEditor(state.students);
 }
+function studentSortName(student, by) {
+  const name = student.fullName.trim();
+  const parts = name.split(/\s+/);
+  const comma = name.indexOf(',');
+  const first = comma < 0 ? parts[0] : name.slice(comma + 1).trim().split(/\s+/)[0];
+  if (by === 'preferred') return student.prefName.trim() || first;
+  return by === 'last' ? (comma < 0 ? parts.at(-1) : name.slice(0, comma).trim()) : first;
+}
+$('rosterSort').onchange = event => {
+  const by = event.target.value;
+  if (!['first', 'last', 'preferred'].includes(by)) return;
+  const collator = new Intl.Collator(undefined, {sensitivity:'base', numeric:true});
+  const sorted = [...state.students].sort((a, b) => {
+    if (!a.fullName.trim() || !b.fullName.trim()) return Number(!a.fullName.trim()) - Number(!b.fullName.trim());
+    return collator.compare(studentSortName(a, by), studentSortName(b, by)) || collator.compare(a.fullName.trim(), b.fullName.trim());
+  });
+  const label = by === 'preferred' ? 'preferred name' : `${by} name`;
+  if (sorted.some((student, index) => student.id !== state.students[index].id)) {
+    snapshot(`Students sorted by ${label}.`);
+    state.students = sorted;
+    save();
+    renderRoster();
+  } else $('rosterSort').value = '';
+  toast(`Students sorted A–Z by ${label}.`);
+  $('rosterSort').focus({preventScroll:true});
+};
 function openStudentEditor() {
   setView('roster');
   const input = [...$('rosterList').querySelectorAll('[data-field="fullName"]')].find(field => field.dataset.student === currentId);
@@ -367,7 +397,68 @@ function fitPhraseBox(textarea) {
   const border = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
   textarea.style.height = Math.ceil(textarea.scrollHeight + border) + 'px';
 }
+function clearPhraseDrag() {
+  const drag = phraseDrag;
+  phraseDrag = null;
+  if (drag?.handle.hasPointerCapture?.(drag.pointerId)) drag.handle.releasePointerCapture(drag.pointerId);
+  $('phraseEditor').querySelectorAll('.phrase-edit-row').forEach(row => row.classList.remove('dragging', 'drop-before', 'drop-after'));
+}
+function movePhrase(from, to) {
+  const phrases = bankDraft.categories[bankCategory];
+  if (from === to || from < 0 || to < 0 || from >= phrases.length || to >= phrases.length) return;
+  const [phrase] = phrases.splice(from, 1);
+  phrases.splice(to, 0, phrase);
+  bankDirty = true;
+  renderBank();
+  $('phraseEditor').querySelector(`[data-phrase-handle="${to}"]`).focus({preventScroll:true});
+  $('phraseOrderAnnouncement').textContent = `Phrase moved to ${to + 1} of ${phrases.length}.`;
+}
+function bindPhraseHandles() {
+  $('phraseEditor').querySelectorAll('[data-phrase-handle]').forEach(handle => {
+    handle.onkeydown = event => {
+      if (event.key === 'Escape') { clearPhraseDrag(); return; }
+      if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+      event.preventDefault();
+      clearPhraseDrag();
+      const from = Number(handle.dataset.phraseHandle);
+      movePhrase(from, from + (event.key === 'ArrowUp' ? -1 : 1));
+    };
+    handle.onpointerdown = event => {
+      if (event.button !== 0 || !event.isPrimary) return;
+      event.preventDefault();
+      clearPhraseDrag();
+      handle.focus({preventScroll:true});
+      const from = Number(handle.dataset.phraseHandle);
+      phraseDrag = {from, to:from, pointerId:event.pointerId, handle};
+      handle.setPointerCapture?.(event.pointerId);
+      handle.closest('.phrase-edit-row').classList.add('dragging');
+    };
+    handle.onpointermove = event => {
+      if (!phraseDrag || event.pointerId !== phraseDrag.pointerId) return;
+      const rows = [...$('phraseEditor').querySelectorAll('.phrase-edit-row')];
+      rows.forEach(row => row.classList.remove('drop-before', 'drop-after'));
+      let target = rows.findIndex(row => event.clientY < row.getBoundingClientRect().bottom);
+      if (target < 0) target = rows.length - 1;
+      const rect = rows[target].getBoundingClientRect();
+      const after = event.clientY >= rect.top + rect.height / 2;
+      let to = target + (after ? 1 : 0);
+      if (phraseDrag.from < to) to--;
+      phraseDrag.to = to;
+      if (to !== phraseDrag.from) rows[target].classList.add(after ? 'drop-after' : 'drop-before');
+      if (event.clientY < 60) window.scrollBy(0, -12);
+      else if (event.clientY > window.innerHeight - 60) window.scrollBy(0, 12);
+    };
+    handle.onpointerup = event => {
+      if (!phraseDrag || event.pointerId !== phraseDrag.pointerId) return;
+      const {from, to} = phraseDrag;
+      clearPhraseDrag();
+      movePhrase(from, to);
+    };
+    handle.onpointercancel = handle.onlostpointercapture = clearPhraseDrag;
+  });
+}
 function renderBank() {
+  clearPhraseDrag();
   if (!bankDraft.categoryOrder.includes(bankCategory)) bankCategory = bankDraft.categoryOrder[0];
   $('bankTopic').innerHTML = bankDraft.categoryOrder.map(cat => `<option ${cat === bankCategory ? 'selected' : ''}>${escapeHTML(cat)}</option>`).join('');
   $('bankTopic').disabled = !bankCategory;
@@ -397,7 +488,8 @@ function renderBank() {
   fitPhraseBox($('valuePhrase'));
   $('phraseEditor').hidden = config.type === 'value';
   $('addPhrase').hidden = config.type === 'value';
-  $('phraseEditor').innerHTML = phrases.length ? phrases.map((opt, i) => `<div class="phrase-edit-row"><label class="visually-hidden" for="phrase-${i}">Option ${i + 1} phrase</label><textarea id="phrase-${i}" data-index="${i}" rows="1" maxlength="10000">${escapeHTML(opt.phrase)}</textarea><div class="option-actions"><button class="text-button danger" data-remove="${i}" aria-label="Remove option ${i + 1}">Remove</button></div></div>`).join('') : '<p class="empty-state">Add a phrase to this topic.</p>';
+  $('phraseEditor').innerHTML = phrases.length ? phrases.map((opt, i) => `<div class="phrase-edit-row"><button class="phrase-grip" data-phrase-handle="${i}" aria-label="Reorder phrase ${i + 1}" aria-describedby="phraseOrderHelp" aria-keyshortcuts="ArrowUp ArrowDown" title="Drag to reorder; use Up/Down arrow keys" ${phrases.length < 2 ? 'disabled' : ''}>${reorderGrip}</button><label class="visually-hidden" for="phrase-${i}">Option ${i + 1} phrase</label><textarea id="phrase-${i}" data-index="${i}" rows="1" maxlength="10000">${escapeHTML(opt.phrase)}</textarea><div class="option-actions"><button class="text-button danger" data-remove="${i}" aria-label="Remove option ${i + 1}">Remove</button></div></div>`).join('') : '<p class="empty-state">Add a phrase to this topic.</p>';
+  bindPhraseHandles();
   $('phraseEditor').querySelectorAll('textarea').forEach(ta => {
     fitPhraseBox(ta);
     ta.oninput = () => {
@@ -429,7 +521,7 @@ function checkedBankDraft() {
   return Core.bankFile({categories, categoryOrder:bankDraft.categoryOrder, topicSettings:bankDraft.topicSettings});
 }
 function orderItems() {
-  return $('orderScope').value === 'topics' ? orderDraft.categoryOrder : orderDraft.categories[bankCategory];
+  return orderDraft.categoryOrder;
 }
 function orderName(item) { return typeof item === 'string' ? item : item.phrase || 'Empty phrase'; }
 function moveOrderItem(from, to) {
@@ -740,15 +832,12 @@ $('undoNotice').onfocusout = () => scheduleUndoNotice();
 $('changeBankOrder').onclick = () => {
   orderDraft = clone(bankDraft);
   draggedOrderIndex = null;
-  const hasOptions = !!bankCategory && bankDraft.topicSettings[bankCategory].type !== 'value';
-  $('orderScope').innerHTML = `<option value="topics">Topics</option>${hasOptions ? `<option value="options">Options for ${escapeHTML(bankCategory)}</option>` : ''}`;
   $('applyOrder').disabled = true;
   $('orderAnnouncement').textContent = '';
   renderOrderList();
   $('orderDialog').showModal();
-  $('orderScope').focus();
+  $('cancelOrder').focus();
 };
-$('orderScope').onchange = () => { clearOrderDrag(); renderOrderList(); };
 $('cancelOrder').onclick = () => $('orderDialog').close();
 $('orderDialog').onclose = () => { orderDraft = null; draggedOrderIndex = null; };
 $('applyOrder').onclick = () => {

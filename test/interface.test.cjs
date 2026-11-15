@@ -488,10 +488,7 @@ test('phrase boxes use a single editable field and retain selections after reord
   change('phrase-0', '[PrefName] puts care into each task.', 'input');
   $('addPhrase').click();
   change('phrase-1', '[PrefName] is building persistence.', 'input');
-  $('changeBankOrder').click();
-  change('orderScope', 'options');
-  document.querySelector('[data-order-up="1"]').click();
-  $('applyOrder').click();
+  document.querySelector('[data-phrase-handle="1"]').dispatchEvent(new ui.window.KeyboardEvent('keydown', {key:'ArrowUp', bubbles:true}));
   $('saveBank').click();
   document.querySelector('[data-view="write"]').click();
   change('topicSelect', 'Effort');
@@ -499,10 +496,7 @@ test('phrase boxes use a single editable field and retain selections after reord
   assert.match($('draftBox').textContent, /Addy is building persistence/);
   assert.equal(saved().categories.Effort[0].phrase, '[PrefName] is building persistence.');
   document.querySelector('[data-view="bank"]').click();
-  $('changeBankOrder').click();
-  change('orderScope', 'options');
-  document.querySelector('[data-order-down="0"]').click();
-  $('applyOrder').click();
+  document.querySelector('[data-phrase-handle="0"]').dispatchEvent(new ui.window.KeyboardEvent('keydown', {key:'ArrowDown', bubbles:true}));
   document.querySelector('[data-remove="0"]').click();
   $('saveBank').click();
   assert.equal(saved().students[0].selections.Effort, '[PrefName] is building persistence.');
@@ -648,6 +642,60 @@ function dragOrder(ui, from, target, clientY) {
   drag(rows[target], 'dragover');
   drag(rows[target], 'drop');
 }
+function phrasePointer(ui, handle, type, clientY, pointerId = 1) {
+  const event = new ui.window.Event(type, {bubbles:true,cancelable:true});
+  Object.defineProperties(event, {button:{value:0},isPrimary:{value:true},pointerId:{value:pointerId},clientY:{value:clientY}});
+  handle.dispatchEvent(event);
+}
+function measurePhraseRows(ui) {
+  [...ui.$('phraseEditor').children].forEach((row, index) => {
+    row.getBoundingClientRect = () => ({top:100 + index * 60, bottom:144 + index * 60, height:44});
+  });
+}
+test('phrase handles drag directly in the bank, stage changes, and preserve selected phrases after saving and reload', t => {
+  const ui = setup(t);
+  ui.choose('0');
+  const selected = ui.saved().students[0].selections.Beginning;
+  ui.document.querySelector('[data-view="bank"]').click();
+  ui.change('phrase-1', '[PrefName] keeps trying.', 'input');
+  measurePhraseRows(ui);
+  const handle = ui.document.querySelector('[data-phrase-handle="0"]');
+  phrasePointer(ui, handle, 'pointerdown', 120);
+  phrasePointer(ui, handle, 'pointermove', 250);
+  assert.equal(ui.$('phraseEditor').children[2].classList.contains('drop-after'), true);
+  assert.equal(ui.$('phrase-0').value, selected, 'drag preview does not mutate the order');
+  phrasePointer(ui, handle, 'pointerup', 250);
+  assert.equal(ui.$('phrase-2').value, selected);
+  assert.equal(ui.$('phrase-0').value, '[PrefName] keeps trying.');
+  assert.equal(ui.saved().categories.Beginning[0].phrase, selected, 'order stays pending until Save bank');
+  assert.equal(ui.document.activeElement.dataset.phraseHandle, '2');
+  assert.match(ui.$('phraseOrderAnnouncement').textContent, /3 of 5/);
+  ui.$('saveBank').click();
+  const saved = ui.saved();
+  assert.equal(saved.categories.Beginning[2].phrase, selected);
+  assert.equal(saved.students[0].selections.Beginning, selected);
+  const reload = setup(t, saved);
+  reload.document.querySelector('[data-view="bank"]').click();
+  assert.equal(reload.$('phrase-2').value, selected);
+});
+test('cancelled phrase drags and boundary keys leave the bank unchanged', t => {
+  const ui = setup(t);
+  ui.document.querySelector('[data-view="bank"]').click();
+  const originalPhrase = ui.$('phrase-0').value;
+  measurePhraseRows(ui);
+  const handle = ui.document.querySelector('[data-phrase-handle="0"]');
+  handle.dispatchEvent(new ui.window.KeyboardEvent('keydown', {key:'ArrowUp',bubbles:true}));
+  for (const cancel of ['pointercancel', 'Escape']) {
+    phrasePointer(ui, handle, 'pointerdown', 120);
+    phrasePointer(ui, handle, 'pointermove', 275);
+    if (cancel === 'Escape') handle.dispatchEvent(new ui.window.KeyboardEvent('keydown', {key:'Escape',bubbles:true}));
+    else phrasePointer(ui, handle, cancel, 275);
+    phrasePointer(ui, handle, 'pointerup', 275);
+    assert.equal(ui.$('phrase-0').value, originalPhrase);
+    assert.equal(ui.$('phraseEditor').querySelector('.dragging, .drop-before, .drop-after'), null);
+    assert.equal(ui.$('saveBank').disabled, true);
+  }
+});
 test('dragging topics and phrase options changes only the pending order and retains selected phrases', t => {
   const ui = setup(t);
   ui.choose('0');
@@ -659,16 +707,43 @@ test('dragging topics and phrase options changes only the pending order and reta
   ui.$('cancelOrder').click();
   assert.equal(ui.$('bankPosition').textContent, '1 / 16');
   ui.$('changeBankOrder').click();
+  assert.equal(ui.$('orderScope'), null);
+  assert.equal(ui.$('orderHeading').textContent, 'Change topic order');
   dragOrder(ui,0,1,1);
-  ui.change('orderScope', 'options');
-  dragOrder(ui,1,0,-1);
   ui.$('applyOrder').click();
+  ui.document.querySelector('[data-phrase-handle="1"]').dispatchEvent(new ui.window.KeyboardEvent('keydown', {key:'ArrowUp',bubbles:true}));
   assert.equal(ui.saved().categoryOrder[0], 'Beginning');
   assert.equal(ui.$('bankPosition').textContent, '2 / 16');
   ui.$('saveBank').click();
   assert.equal(ui.saved().categoryOrder[0], 'Responsibility');
   assert.equal(ui.saved().categories.Beginning[1].phrase, selected);
   assert.equal(ui.saved().students[0].selections.Beginning, selected);
+});
+test('roster sorting supports first, last and preferred names while preserving work, selection, persistence and Undo', t => {
+  const state = Core.validate(original);
+  state.students = [
+    ['Ben Zebra', 'Zed'], ['zoe Adams', 'Amy'], ['alice Young', ''], ['Éva Baker', 'Bea'], ['', '']
+  ].map(([fullName,prefName], index) => ({...state.students[0], id:`sort-${index}`, fullName, prefName, finalComment:`Comment ${index}`, selections:{...state.students[0].selections}}));
+  const ui = setup(t, state);
+  ui.document.querySelector('[data-view="roster"]').click();
+  const before = ui.saved();
+  for (const [by, expected] of [['first',[2,0,3,1,4]],['last',[1,3,2,0,4]],['preferred',[2,1,3,0,4]]]) {
+    ui.change('rosterSort', by);
+    const sorted = ui.saved();
+    assert.deepEqual(sorted.students.map(student=>student.id), expected.map(index=>`sort-${index}`));
+    assert.deepEqual([...ui.$('rosterList').querySelectorAll('[data-field="fullName"]')].map(input=>input.value), expected.map(index=>state.students[index].fullName));
+    for (const student of sorted.students) assert.deepEqual(student, before.students.find(item=>item.id===student.id));
+    assert.deepEqual(sorted.categories, before.categories);
+    ui.document.querySelector('[data-view="write"]').click();
+    assert.equal(ui.$('studentSelect').value, 'sort-0');
+    assert.equal(ui.$('studentPosition').textContent, `${expected.indexOf(0) + 1} / 5`);
+    ui.document.querySelector('[data-view="roster"]').click();
+    const reload = setup(t, sorted);
+    assert.deepEqual(reload.saved().students.map(student=>student.id), sorted.students.map(student=>student.id));
+    ui.$('undoBtn').click();
+    assert.deepEqual(ui.saved().students, before.students);
+    ui.document.querySelector('[data-view="roster"]').click();
+  }
 });
 test('only Selection and Value Entry are offered, and configured units appear beside the entry and in its draft', t => {
   const ui = setup(t);

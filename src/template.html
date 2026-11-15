@@ -59,7 +59,7 @@
         <input id="rosterFile" class="visually-hidden" type="file" accept=".json,application/json" aria-label="Choose a student roster or class backup" tabindex="-1">
         <p id="rosterImportError" class="inline-warning" role="alert" hidden></p>
         <section id="rosterImportPreview" class="roster-import-preview" aria-label="Student roster import preview" hidden></section>
-        <p id="rosterSummary" class="progress-summary"></p>
+        <div class="roster-list-heading"><p id="rosterSummary" class="progress-summary"></p><div class="field"><label for="rosterSort" class="visually-hidden">Sort students</label><select id="rosterSort"><option value="">Sort students…</option><option value="first">First name · A–Z</option><option value="last">Last name · A–Z</option><option value="preferred">Preferred name · A–Z</option></select></div></div>
         <div id="rosterPanel" role="region" aria-label="Student roster" tabindex="0"><div id="rosterList"></div></div>
       </section>
       <section id="bankView" aria-labelledby="bankHeading" hidden>
@@ -82,6 +82,8 @@
           <div class="bank-definition-heading"><h3 id="bankDefinitionHeading">Phrases</h3><details class="token-help"><summary>Phrase tokens</summary><p class="helper tokens"><code>[FullName]</code> <code>[PrefName]</code> <code>[HeShe]</code> <code>[HeSheThey]</code> <code>[HisHerTheir]</code> <code>[HimHerThem]</code> <code>[Value]</code> <span>[Score] also works in older phrases.</span></p></details></div>
           <div class="field value-template"><label for="valuePhrase" class="visually-hidden">Matching phrase</label><textarea id="valuePhrase" rows="1" maxlength="10000" placeholder="[HeShe] has a Fluency score of [Value]%."></textarea><p class="helper">Use [Value] where the entry belongs. Leave a student's entry blank to skip it.</p></div>
           <div id="phraseEditor"></div>
+          <p id="phraseOrderHelp" class="visually-hidden">Drag a phrase handle to reorder. With the handle focused, use Up or Down arrow keys to move the phrase. Press Escape to cancel a drag. Save the bank to keep changes.</p>
+          <p id="phraseOrderAnnouncement" class="visually-hidden" role="status"></p>
           <button id="addPhrase" class="button">Add phrase</button>
         </div>
         <div class="bank-save-bar"><span id="bankEditStatus" class="muted">No unsaved changes</span><div class="actions"><button id="discardBank" class="button" disabled>Discard changes</button><button id="saveBank" class="button primary" disabled>Save bank</button></div></div>
@@ -96,10 +98,9 @@
   </dialog>
   <dialog id="confirmDialog" aria-labelledby="confirmHeading"><h2 id="confirmHeading"></h2><p id="confirmMessage"></p><div class="actions"><button id="cancelConfirm" class="button">Cancel</button><button id="acceptConfirm" class="button primary">Continue</button></div></dialog>
   <dialog id="orderDialog" aria-labelledby="orderHeading">
-    <h2 id="orderHeading">Change order</h2>
-    <p class="helper">Drag rows or use Up/Down. Save the bank to keep changes.</p>
-    <div class="field"><label for="orderScope">Reorder</label><select id="orderScope"></select></div>
-    <ol id="orderList" class="order-list" aria-label="Reorder bank items"></ol>
+    <h2 id="orderHeading">Change topic order</h2>
+    <p class="helper">Drag topics or use Up/Down. Save the bank to keep changes.</p>
+    <ol id="orderList" class="order-list" aria-label="Reorder topics"></ol>
     <p id="orderAnnouncement" class="visually-hidden" role="status"></p>
     <div class="actions order-actions"><button id="cancelOrder" class="button">Cancel</button><button id="applyOrder" class="button primary" disabled>Apply order</button></div>
   </dialog>

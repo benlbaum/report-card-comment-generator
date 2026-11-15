@@ -142,6 +142,8 @@ main { padding: 0 0 24px; margin-inline: -40px; }
 .page-heading .helper { margin-bottom: 0; }
 #overviewView, #rosterView, #bankView { padding: 24px 28px; background: white; border-radius: 8px; }
 .progress-summary { font-weight: 600; font-size: .9375rem; }
+.roster-list-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.roster-list-heading select { width: 205px; min-height: 42px; font-size: .875rem; }
 .overview-filters { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; margin: 16px 0 8px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
 .overview-filters .field { width: 170px; }
 .overview-filters .field:last-child { width: 240px; }
@@ -223,7 +225,14 @@ main { padding: 0 0 24px; margin-inline: -40px; }
 .value-template { grid-column: 1 / -1; }
 .value-template textarea { min-height: 44px; overflow-y: hidden; }
 .value-template .helper { margin: 4px 0 0; }
-.phrase-edit-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: start; margin: 8px 0; }
+.phrase-edit-row { position: relative; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 8px; align-items: start; margin: 8px 0; }
+.phrase-grip { display: flex; align-items: center; justify-content: center; width: 28px; min-height: 44px; padding: 0; border: 0; border-radius: 4px; background: transparent; color: var(--muted); cursor: grab; touch-action: none; user-select: none; }
+.phrase-grip:hover:not(:disabled) { color: var(--plum); background: var(--plum-tint); }
+.phrase-grip:active:not(:disabled) { cursor: grabbing; }
+.phrase-edit-row.dragging { opacity: .45; }
+.phrase-edit-row.drop-before::before, .phrase-edit-row.drop-after::after { content: ''; position: absolute; left: 36px; right: 0; height: 2px; background: var(--plum); pointer-events: none; }
+.phrase-edit-row.drop-before::before { top: -5px; }
+.phrase-edit-row.drop-after::after { bottom: -5px; }
 .phrase-edit-row label { margin: 0; white-space: nowrap; }
 .option-actions { display: flex; align-items: center; }
 .option-actions .text-button { min-height: 44px; padding-inline: 8px; color: var(--muted); font-size: .8125rem; text-decoration: none; }
@@ -255,7 +264,7 @@ dialog::backdrop { background: #23172b80; }
 @media (max-width: 800px) {
   .notice { margin-inline: -18px; padding: 12px 20px; }
   .value-settings { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .phrase-edit-row { grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
+  .phrase-edit-row { gap: 8px; }
   .app { padding: 0 18px; } .app-header { margin: 0 -18px; padding: 16px 18px; gap: 16px; } h1 { font-size: 1.25rem; }
   .app-header .button { padding: 9px 12px; white-space: normal; max-width: 125px; flex-shrink: 0; }
   .main-nav { margin: 0 -18px; padding: 0 18px; gap: 14px; } .setup-nav { gap: 14px; } .nav-link { font-size: .8125rem; } .count { display: none; }
@@ -353,7 +362,7 @@ dialog::backdrop { background: #23172b80; }
         <input id="rosterFile" class="visually-hidden" type="file" accept=".json,application/json" aria-label="Choose a student roster or class backup" tabindex="-1">
         <p id="rosterImportError" class="inline-warning" role="alert" hidden></p>
         <section id="rosterImportPreview" class="roster-import-preview" aria-label="Student roster import preview" hidden></section>
-        <p id="rosterSummary" class="progress-summary"></p>
+        <div class="roster-list-heading"><p id="rosterSummary" class="progress-summary"></p><div class="field"><label for="rosterSort" class="visually-hidden">Sort students</label><select id="rosterSort"><option value="">Sort students…</option><option value="first">First name · A–Z</option><option value="last">Last name · A–Z</option><option value="preferred">Preferred name · A–Z</option></select></div></div>
         <div id="rosterPanel" role="region" aria-label="Student roster" tabindex="0"><div id="rosterList"></div></div>
       </section>
       <section id="bankView" aria-labelledby="bankHeading" hidden>
@@ -376,6 +385,8 @@ dialog::backdrop { background: #23172b80; }
           <div class="bank-definition-heading"><h3 id="bankDefinitionHeading">Phrases</h3><details class="token-help"><summary>Phrase tokens</summary><p class="helper tokens"><code>[FullName]</code> <code>[PrefName]</code> <code>[HeShe]</code> <code>[HeSheThey]</code> <code>[HisHerTheir]</code> <code>[HimHerThem]</code> <code>[Value]</code> <span>[Score] also works in older phrases.</span></p></details></div>
           <div class="field value-template"><label for="valuePhrase" class="visually-hidden">Matching phrase</label><textarea id="valuePhrase" rows="1" maxlength="10000" placeholder="[HeShe] has a Fluency score of [Value]%."></textarea><p class="helper">Use [Value] where the entry belongs. Leave a student's entry blank to skip it.</p></div>
           <div id="phraseEditor"></div>
+          <p id="phraseOrderHelp" class="visually-hidden">Drag a phrase handle to reorder. With the handle focused, use Up or Down arrow keys to move the phrase. Press Escape to cancel a drag. Save the bank to keep changes.</p>
+          <p id="phraseOrderAnnouncement" class="visually-hidden" role="status"></p>
           <button id="addPhrase" class="button">Add phrase</button>
         </div>
         <div class="bank-save-bar"><span id="bankEditStatus" class="muted">No unsaved changes</span><div class="actions"><button id="discardBank" class="button" disabled>Discard changes</button><button id="saveBank" class="button primary" disabled>Save bank</button></div></div>
@@ -390,10 +401,9 @@ dialog::backdrop { background: #23172b80; }
   </dialog>
   <dialog id="confirmDialog" aria-labelledby="confirmHeading"><h2 id="confirmHeading"></h2><p id="confirmMessage"></p><div class="actions"><button id="cancelConfirm" class="button">Cancel</button><button id="acceptConfirm" class="button primary">Continue</button></div></dialog>
   <dialog id="orderDialog" aria-labelledby="orderHeading">
-    <h2 id="orderHeading">Change order</h2>
-    <p class="helper">Drag rows or use Up/Down. Save the bank to keep changes.</p>
-    <div class="field"><label for="orderScope">Reorder</label><select id="orderScope"></select></div>
-    <ol id="orderList" class="order-list" aria-label="Reorder bank items"></ol>
+    <h2 id="orderHeading">Change topic order</h2>
+    <p class="helper">Drag topics or use Up/Down. Save the bank to keep changes.</p>
+    <ol id="orderList" class="order-list" aria-label="Reorder topics"></ol>
     <p id="orderAnnouncement" class="visually-hidden" role="status"></p>
     <div class="actions order-actions"><button id="cancelOrder" class="button">Cancel</button><button id="applyOrder" class="button primary" disabled>Apply order</button></div>
   </dialog>
@@ -614,6 +624,8 @@ let pendingBankImport = null;
 let bankImportFilename = '';
 let orderDraft = null;
 let draggedOrderIndex = null;
+let phraseDrag = null;
+const reorderGrip = '<svg aria-hidden="true" width="20" height="24" viewBox="0 0 20 24" fill="currentColor"><circle cx="6" cy="6" r="1.5"/><circle cx="14" cy="6" r="1.5"/><circle cx="6" cy="12" r="1.5"/><circle cx="14" cy="12" r="1.5"/><circle cx="6" cy="18" r="1.5"/><circle cx="14" cy="18" r="1.5"/></svg>';
 const current = () => state.students.find(s => s.id === currentId);
 const displayName = s => s.fullName || 'New student';
 
@@ -933,8 +945,36 @@ function renderStudentEditor(students) {
 function renderRoster() {
   $('className').value = state.className;
   $('rosterSummary').textContent = `${state.students.length} ${state.students.length === 1 ? 'student' : 'students'}`;
+  $('rosterSort').value = '';
+  $('rosterSort').disabled = state.students.length < 2;
   renderStudentEditor(state.students);
 }
+function studentSortName(student, by) {
+  const name = student.fullName.trim();
+  const parts = name.split(/\s+/);
+  const comma = name.indexOf(',');
+  const first = comma < 0 ? parts[0] : name.slice(comma + 1).trim().split(/\s+/)[0];
+  if (by === 'preferred') return student.prefName.trim() || first;
+  return by === 'last' ? (comma < 0 ? parts.at(-1) : name.slice(0, comma).trim()) : first;
+}
+$('rosterSort').onchange = event => {
+  const by = event.target.value;
+  if (!['first', 'last', 'preferred'].includes(by)) return;
+  const collator = new Intl.Collator(undefined, {sensitivity:'base', numeric:true});
+  const sorted = [...state.students].sort((a, b) => {
+    if (!a.fullName.trim() || !b.fullName.trim()) return Number(!a.fullName.trim()) - Number(!b.fullName.trim());
+    return collator.compare(studentSortName(a, by), studentSortName(b, by)) || collator.compare(a.fullName.trim(), b.fullName.trim());
+  });
+  const label = by === 'preferred' ? 'preferred name' : `${by} name`;
+  if (sorted.some((student, index) => student.id !== state.students[index].id)) {
+    snapshot(`Students sorted by ${label}.`);
+    state.students = sorted;
+    save();
+    renderRoster();
+  } else $('rosterSort').value = '';
+  toast(`Students sorted A–Z by ${label}.`);
+  $('rosterSort').focus({preventScroll:true});
+};
 function openStudentEditor() {
   setView('roster');
   const input = [...$('rosterList').querySelectorAll('[data-field="fullName"]')].find(field => field.dataset.student === currentId);
@@ -955,7 +995,68 @@ function fitPhraseBox(textarea) {
   const border = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
   textarea.style.height = Math.ceil(textarea.scrollHeight + border) + 'px';
 }
+function clearPhraseDrag() {
+  const drag = phraseDrag;
+  phraseDrag = null;
+  if (drag?.handle.hasPointerCapture?.(drag.pointerId)) drag.handle.releasePointerCapture(drag.pointerId);
+  $('phraseEditor').querySelectorAll('.phrase-edit-row').forEach(row => row.classList.remove('dragging', 'drop-before', 'drop-after'));
+}
+function movePhrase(from, to) {
+  const phrases = bankDraft.categories[bankCategory];
+  if (from === to || from < 0 || to < 0 || from >= phrases.length || to >= phrases.length) return;
+  const [phrase] = phrases.splice(from, 1);
+  phrases.splice(to, 0, phrase);
+  bankDirty = true;
+  renderBank();
+  $('phraseEditor').querySelector(`[data-phrase-handle="${to}"]`).focus({preventScroll:true});
+  $('phraseOrderAnnouncement').textContent = `Phrase moved to ${to + 1} of ${phrases.length}.`;
+}
+function bindPhraseHandles() {
+  $('phraseEditor').querySelectorAll('[data-phrase-handle]').forEach(handle => {
+    handle.onkeydown = event => {
+      if (event.key === 'Escape') { clearPhraseDrag(); return; }
+      if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+      event.preventDefault();
+      clearPhraseDrag();
+      const from = Number(handle.dataset.phraseHandle);
+      movePhrase(from, from + (event.key === 'ArrowUp' ? -1 : 1));
+    };
+    handle.onpointerdown = event => {
+      if (event.button !== 0 || !event.isPrimary) return;
+      event.preventDefault();
+      clearPhraseDrag();
+      handle.focus({preventScroll:true});
+      const from = Number(handle.dataset.phraseHandle);
+      phraseDrag = {from, to:from, pointerId:event.pointerId, handle};
+      handle.setPointerCapture?.(event.pointerId);
+      handle.closest('.phrase-edit-row').classList.add('dragging');
+    };
+    handle.onpointermove = event => {
+      if (!phraseDrag || event.pointerId !== phraseDrag.pointerId) return;
+      const rows = [...$('phraseEditor').querySelectorAll('.phrase-edit-row')];
+      rows.forEach(row => row.classList.remove('drop-before', 'drop-after'));
+      let target = rows.findIndex(row => event.clientY < row.getBoundingClientRect().bottom);
+      if (target < 0) target = rows.length - 1;
+      const rect = rows[target].getBoundingClientRect();
+      const after = event.clientY >= rect.top + rect.height / 2;
+      let to = target + (after ? 1 : 0);
+      if (phraseDrag.from < to) to--;
+      phraseDrag.to = to;
+      if (to !== phraseDrag.from) rows[target].classList.add(after ? 'drop-after' : 'drop-before');
+      if (event.clientY < 60) window.scrollBy(0, -12);
+      else if (event.clientY > window.innerHeight - 60) window.scrollBy(0, 12);
+    };
+    handle.onpointerup = event => {
+      if (!phraseDrag || event.pointerId !== phraseDrag.pointerId) return;
+      const {from, to} = phraseDrag;
+      clearPhraseDrag();
+      movePhrase(from, to);
+    };
+    handle.onpointercancel = handle.onlostpointercapture = clearPhraseDrag;
+  });
+}
 function renderBank() {
+  clearPhraseDrag();
   if (!bankDraft.categoryOrder.includes(bankCategory)) bankCategory = bankDraft.categoryOrder[0];
   $('bankTopic').innerHTML = bankDraft.categoryOrder.map(cat => `<option ${cat === bankCategory ? 'selected' : ''}>${escapeHTML(cat)}</option>`).join('');
   $('bankTopic').disabled = !bankCategory;
@@ -985,7 +1086,8 @@ function renderBank() {
   fitPhraseBox($('valuePhrase'));
   $('phraseEditor').hidden = config.type === 'value';
   $('addPhrase').hidden = config.type === 'value';
-  $('phraseEditor').innerHTML = phrases.length ? phrases.map((opt, i) => `<div class="phrase-edit-row"><label class="visually-hidden" for="phrase-${i}">Option ${i + 1} phrase</label><textarea id="phrase-${i}" data-index="${i}" rows="1" maxlength="10000">${escapeHTML(opt.phrase)}</textarea><div class="option-actions"><button class="text-button danger" data-remove="${i}" aria-label="Remove option ${i + 1}">Remove</button></div></div>`).join('') : '<p class="empty-state">Add a phrase to this topic.</p>';
+  $('phraseEditor').innerHTML = phrases.length ? phrases.map((opt, i) => `<div class="phrase-edit-row"><button class="phrase-grip" data-phrase-handle="${i}" aria-label="Reorder phrase ${i + 1}" aria-describedby="phraseOrderHelp" aria-keyshortcuts="ArrowUp ArrowDown" title="Drag to reorder; use Up/Down arrow keys" ${phrases.length < 2 ? 'disabled' : ''}>${reorderGrip}</button><label class="visually-hidden" for="phrase-${i}">Option ${i + 1} phrase</label><textarea id="phrase-${i}" data-index="${i}" rows="1" maxlength="10000">${escapeHTML(opt.phrase)}</textarea><div class="option-actions"><button class="text-button danger" data-remove="${i}" aria-label="Remove option ${i + 1}">Remove</button></div></div>`).join('') : '<p class="empty-state">Add a phrase to this topic.</p>';
+  bindPhraseHandles();
   $('phraseEditor').querySelectorAll('textarea').forEach(ta => {
     fitPhraseBox(ta);
     ta.oninput = () => {
@@ -1017,7 +1119,7 @@ function checkedBankDraft() {
   return Core.bankFile({categories, categoryOrder:bankDraft.categoryOrder, topicSettings:bankDraft.topicSettings});
 }
 function orderItems() {
-  return $('orderScope').value === 'topics' ? orderDraft.categoryOrder : orderDraft.categories[bankCategory];
+  return orderDraft.categoryOrder;
 }
 function orderName(item) { return typeof item === 'string' ? item : item.phrase || 'Empty phrase'; }
 function moveOrderItem(from, to) {
@@ -1328,15 +1430,12 @@ $('undoNotice').onfocusout = () => scheduleUndoNotice();
 $('changeBankOrder').onclick = () => {
   orderDraft = clone(bankDraft);
   draggedOrderIndex = null;
-  const hasOptions = !!bankCategory && bankDraft.topicSettings[bankCategory].type !== 'value';
-  $('orderScope').innerHTML = `<option value="topics">Topics</option>${hasOptions ? `<option value="options">Options for ${escapeHTML(bankCategory)}</option>` : ''}`;
   $('applyOrder').disabled = true;
   $('orderAnnouncement').textContent = '';
   renderOrderList();
   $('orderDialog').showModal();
-  $('orderScope').focus();
+  $('cancelOrder').focus();
 };
-$('orderScope').onchange = () => { clearOrderDrag(); renderOrderList(); };
 $('cancelOrder').onclick = () => $('orderDialog').close();
 $('orderDialog').onclose = () => { orderDraft = null; draggedOrderIndex = null; };
 $('applyOrder').onclick = () => {

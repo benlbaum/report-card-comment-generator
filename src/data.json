@@ -1,0 +1,332 @@
+{
+  "students": [
+    {
+      "row": 5,
+      "fullName": "Addyson Martinez",
+      "prefName": "Addy",
+      "pronoun": "She/Her",
+      "fluencyScore": 60,
+      "status": "Done"
+    },
+    {
+      "row": 6,
+      "fullName": "Salman Khan",
+      "prefName": "Salman",
+      "pronoun": "He/Him",
+      "fluencyScore": 100,
+      "status": "Done"
+    },
+    {
+      "row": 7,
+      "fullName": "Jordan Lee",
+      "prefName": "Jordan",
+      "pronoun": "He/Him",
+      "fluencyScore": 35,
+      "status": "Draft"
+    },
+    {
+      "row": 99,
+      "fullName": "",
+      "prefName": "",
+      "pronoun": "She/Her",
+      "fluencyScore": "",
+      "status": "Not started"
+    }
+  ],
+  "categories": {
+    "Beginning": [
+      {
+        "label": "1. … had a strong first trimester in math and social studies!",
+        "phrase": "[FullName] had a strong first trimester in math and social studies!"
+      },
+      {
+        "label": "2. … had a solid start to the school year in fifth grade!",
+        "phrase": "[FullName] had a solid start to the school year in fifth grade!"
+      },
+      {
+        "label": "3. … had a decent start to the school year in fifth grade!",
+        "phrase": "[FullName] had a decent start to the school year in fifth grade!"
+      },
+      {
+        "label": "4. … had an inconsistent first trimester in math and social studies.",
+        "phrase": "[FullName] had an inconsistent first trimester in math and social studies."
+      },
+      {
+        "label": "5. … has struggled academically this first trimester.",
+        "phrase": "[FullName] has struggled academically this first trimester."
+      }
+    ],
+    "Responsibility": [
+      {
+        "label": "1. … consistently follows school rules and expectations and relia...",
+        "phrase": "[PrefName] consistently follows school rules and expectations and reliably completes and submits assignments on time."
+      },
+      {
+        "label": "2. … follows school rules and expectations and completes and subm...",
+        "phrase": "[PrefName] follows school rules and expectations and completes and submits assignments on time."
+      },
+      {
+        "label": "3. … generally follows school rules but sometimes needs reminders...",
+        "phrase": "[PrefName] generally follows school rules but sometimes needs reminders to complete and submit classwork on time."
+      },
+      {
+        "label": "4. … struggles to consistently follow school rules and expectatio...",
+        "phrase": "[PrefName] struggles to consistently follow school rules and expectations and does not regularly complete or submit assignments on time."
+      }
+    ],
+    "Organization": [
+      {
+        "label": "1. … demonstrates strong organizational skills and independently ...",
+        "phrase": "[HeShe] demonstrates strong organizational skills and independently manages materials effectively."
+      },
+      {
+        "label": "2. … shows good organizational skills and manages materials effec...",
+        "phrase": "[HeShe] shows good organizational skills and manages materials effectively."
+      },
+      {
+        "label": "3. … is developing organizational skills and sometimes needs remi...",
+        "phrase": "[HeShe] is developing organizational skills and sometimes needs reminders to manage materials effectively."
+      },
+      {
+        "label": "4. … struggles with organization and often needs support to manag...",
+        "phrase": "[HeShe] struggles with organization and often needs support to manage materials."
+      }
+    ],
+    "Self-Control": [
+      {
+        "label": "1. … demonstrates strong self-awareness and effectively uses stra...",
+        "phrase": "[PrefName] demonstrates strong self-awareness and effectively uses strategies to manage feelings, thoughts, and behaviors."
+      },
+      {
+        "label": "2. … is developing self-awareness and is learning to use strategi...",
+        "phrase": "[PrefName] is developing self-awareness and is learning to use strategies to manage feelings, thoughts, and behaviors."
+      },
+      {
+        "label": "3. … is working on self-awareness and benefits from support when ...",
+        "phrase": "[PrefName] is working on self-awareness and benefits from support when managing feelings, thoughts, and behaviors."
+      },
+      {
+        "label": "4. … has difficulty with self-awareness and frequently needs adul...",
+        "phrase": "[PrefName] has difficulty with self-awareness and frequently needs adult support to manage feelings, thoughts, and behaviors."
+      }
+    ],
+    "Collaboration": [
+      {
+        "label": "1. … regularly communicates respectfully with peers and adults an...",
+        "phrase": "[HeShe] regularly communicates respectfully with peers and adults and contributes positively in group settings."
+      },
+      {
+        "label": "2. … is working toward regularly communicating respectfully with ...",
+        "phrase": "[HeShe] is working toward regularly communicating respectfully with peers and adults."
+      },
+      {
+        "label": "3. … prefers to work independently and is still developing comfor...",
+        "phrase": "[HeShe] prefers to work independently and is still developing comfort collaborating in group settings."
+      },
+      {
+        "label": "4. … needs support to communicate respectfully and participate pr...",
+        "phrase": "[HeShe] needs support to communicate respectfully and participate productively with peers."
+      }
+    ],
+    "Initiative": [
+      {
+        "label": "1. … initiates tasks independently, puts forth strong effort, and...",
+        "phrase": "[PrefName] initiates tasks independently, puts forth strong effort, and is willing to take academic risks."
+      },
+      {
+        "label": "2. … puts a great deal of effort into assignments and is willing ...",
+        "phrase": "[PrefName] puts a great deal of effort into assignments and is willing to take risks."
+      },
+      {
+        "label": "3. … puts effort into assignments and is beginning to take academ...",
+        "phrase": "[PrefName] puts effort into assignments and is beginning to take academic risks."
+      },
+      {
+        "label": "4. … struggles to initiate tasks independently and often needs pr...",
+        "phrase": "[PrefName] struggles to initiate tasks independently and often needs prompting to get started."
+      }
+    ],
+    "Independent Work": [
+      {
+        "label": "1. … uses class time appropriately to complete tasks and follows ...",
+        "phrase": "[HeShe] uses class time appropriately to complete tasks and follows directions with minimal supervision."
+      },
+      {
+        "label": "2. … generally uses class time well and follows directions, thoug...",
+        "phrase": "[HeShe] generally uses class time well and follows directions, though occasional check-ins are helpful."
+      },
+      {
+        "label": "3. … does not always use class time appropriately and sometimes r...",
+        "phrase": "[HeShe] does not always use class time appropriately and sometimes requires supervision to remain on task."
+      },
+      {
+        "label": "4. … frequently needs adult support to stay on task and complete ...",
+        "phrase": "[HeShe] frequently needs adult support to stay on task and complete work during independent time."
+      }
+    ],
+    "Fluency": [
+      {
+        "label": "1. … has mastered our end-of-year goal of division fact fluency! ...",
+        "phrase": "[PrefName] has mastered our end-of-year goal of division fact fluency! Way to go, [PrefName]!"
+      },
+      {
+        "label": "2. … is making progress toward multiplication or division math fa...",
+        "phrase": "[PrefName] is making progress toward multiplication or division math fact fluency and automaticity with a current score of [Score]%. Our goal is to be division fact fluent by year’s end."
+      },
+      {
+        "label": "3. … is experiencing difficulty with math fact fluency and automa...",
+        "phrase": "[PrefName] is experiencing difficulty with math fact fluency and automaticity and should practice more than the required three times per week."
+      }
+    ],
+    "All Math Concepts": [
+      {
+        "label": "1. … has mastered both multi-digit multiplication and traditional...",
+        "phrase": "[HeShe] has mastered both multi-digit multiplication and traditional long division concepts as well as area and volume concepts."
+      },
+      {
+        "label": "2. … independently demonstrates understanding of both multi-digit...",
+        "phrase": "[HeShe] independently demonstrates understanding of both multi-digit multiplication and traditional long division concepts as well as area and volume concepts."
+      },
+      {
+        "label": "3. … demonstrates understanding of multi-digit multiplication, lo...",
+        "phrase": "[HeShe] demonstrates understanding of multi-digit multiplication, long division, area, and volume concepts with support."
+      },
+      {
+        "label": "4. … struggles to demonstrate understanding of multi-digit multip...",
+        "phrase": "[HeShe] struggles to demonstrate understanding of multi-digit multiplication, long division, area, and volume concepts, even with support."
+      }
+    ],
+    "Multi-digit Mult.": [
+      {
+        "label": "1. … has mastered multi-digit multiplication concepts.",
+        "phrase": "[PrefName] has mastered multi-digit multiplication concepts."
+      },
+      {
+        "label": "2. … independently demonstrates understanding of multi-digit mult...",
+        "phrase": "[PrefName] independently demonstrates understanding of multi-digit multiplication concepts."
+      },
+      {
+        "label": "3. … demonstrates understanding of multi-digit multiplication con...",
+        "phrase": "[PrefName] demonstrates understanding of multi-digit multiplication concepts with support."
+      },
+      {
+        "label": "4. … struggles to demonstrate understanding of multi-digit multip...",
+        "phrase": "[PrefName] struggles to demonstrate understanding of multi-digit multiplication concepts, even with support."
+      }
+    ],
+    "Long Division": [
+      {
+        "label": "1. … has mastered traditional long division concepts.",
+        "phrase": "[HeShe] has mastered traditional long division concepts."
+      },
+      {
+        "label": "2. … independently demonstrates understanding of traditional long...",
+        "phrase": "[HeShe] independently demonstrates understanding of traditional long division concepts."
+      },
+      {
+        "label": "3. … demonstrates understanding of traditional long division conc...",
+        "phrase": "[HeShe] demonstrates understanding of traditional long division concepts with support."
+      },
+      {
+        "label": "4. … struggles to demonstrate understanding of traditional long d...",
+        "phrase": "[HeShe] struggles to demonstrate understanding of traditional long division concepts, even with support."
+      }
+    ],
+    "Area": [
+      {
+        "label": "1. … has mastered area concepts.",
+        "phrase": "[PrefName] has mastered area concepts."
+      },
+      {
+        "label": "2. … independently demonstrates understanding of area concepts.",
+        "phrase": "[PrefName] independently demonstrates understanding of area concepts."
+      },
+      {
+        "label": "3. … demonstrates understanding of area concepts with support.",
+        "phrase": "[PrefName] demonstrates understanding of area concepts with support."
+      },
+      {
+        "label": "4. … struggles to demonstrate understanding of area concepts, eve...",
+        "phrase": "[PrefName] struggles to demonstrate understanding of area concepts, even with support."
+      }
+    ],
+    "Volume": [
+      {
+        "label": "1. … has mastered volume concepts.",
+        "phrase": "[HeShe] has mastered volume concepts."
+      },
+      {
+        "label": "2. … independently demonstrates understanding of volume concepts.",
+        "phrase": "[HeShe] independently demonstrates understanding of volume concepts."
+      },
+      {
+        "label": "3. … demonstrates understanding of volume concepts with support.",
+        "phrase": "[HeShe] demonstrates understanding of volume concepts with support."
+      },
+      {
+        "label": "4. … struggles to demonstrate understanding of volume concepts, e...",
+        "phrase": "[HeShe] struggles to demonstrate understanding of volume concepts, even with support."
+      }
+    ],
+    "ELA (placeholder)": [
+      {
+        "label": "1. … is meeting grade-level expectations in reading and writing. ...",
+        "phrase": "[PrefName] is meeting grade-level expectations in reading and writing. (Replace with your own ELA phrases)"
+      },
+      {
+        "label": "2. … is progressing toward grade-level expectations in reading an...",
+        "phrase": "[PrefName] is progressing toward grade-level expectations in reading and writing with support. (Replace with your own ELA phrases)"
+      },
+      {
+        "label": "3. … is working below grade-level expectations in reading and wri...",
+        "phrase": "[PrefName] is working below grade-level expectations in reading and writing and needs continued support. (Replace with your own ELA phrases)"
+      }
+    ],
+    "Social Studies (ph)": [
+      {
+        "label": "1. … demonstrates strong understanding of social studies concepts...",
+        "phrase": "[HeShe] demonstrates strong understanding of social studies concepts and participates thoughtfully in discussions. (Replace with your own SS phrases)"
+      },
+      {
+        "label": "2. … is developing understanding of social studies concepts and b...",
+        "phrase": "[HeShe] is developing understanding of social studies concepts and benefits from support. (Replace with your own SS phrases)"
+      },
+      {
+        "label": "3. … needs additional support to grasp key social studies concept...",
+        "phrase": "[HeShe] needs additional support to grasp key social studies concepts. (Replace with your own SS phrases)"
+      }
+    ],
+    "Ending": [
+      {
+        "label": "1. I am very proud of you, …! Keep up the great work!",
+        "phrase": "I am very proud of you, [PrefName]! Keep up the great work!"
+      },
+      {
+        "label": "2. I am proud of your progress this trimester, …! Keep working hard!",
+        "phrase": "I am proud of your progress this trimester, [PrefName]! Keep working hard!"
+      },
+      {
+        "label": "3. Keep working hard, …, and giving your best! You CAN do it! I b...",
+        "phrase": "Keep working hard, [PrefName], and giving your best! You CAN do it! I believe in YOU!"
+      }
+    ]
+  },
+  "categoryOrder": [
+    "Beginning",
+    "Responsibility",
+    "Organization",
+    "Self-Control",
+    "Collaboration",
+    "Initiative",
+    "Independent Work",
+    "Fluency",
+    "All Math Concepts",
+    "Multi-digit Mult.",
+    "Long Division",
+    "Area",
+    "Volume",
+    "ELA (placeholder)",
+    "Social Studies (ph)",
+    "Ending"
+  ]
+}

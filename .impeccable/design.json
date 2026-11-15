@@ -1,0 +1,434 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-15T03:19:02.120702+00:00",
+  "title": "Design System: Report Card Comment Builder",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "tonalRamp": [
+          "oklch(0.15 0.0073 305.74)",
+          "oklch(0.27 0.0135 305.74)",
+          "oklch(0.39 0.0176 305.74)",
+          "oklch(0.51 0.0207 305.74)",
+          "oklch(0.63 0.0207 305.74)",
+          "oklch(0.75 0.0176 305.74)",
+          "oklch(0.87 0.0104 305.74)",
+          "oklch(0.95 0.0041 305.74)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "tonalRamp": [
+          "oklch(0.15 0.0077 309.57)",
+          "oklch(0.27 0.0142 309.57)",
+          "oklch(0.39 0.0186 309.57)",
+          "oklch(0.51 0.0219 309.57)",
+          "oklch(0.63 0.0219 309.57)",
+          "oklch(0.75 0.0186 309.57)",
+          "oklch(0.87 0.0110 309.57)",
+          "oklch(0.95 0.0044 309.57)"
+        ]
+      },
+      "plum": {
+        "role": "primary",
+        "displayName": "Plum",
+        "tonalRamp": [
+          "oklch(0.15 0.0233 309.56)",
+          "oklch(0.27 0.0432 309.56)",
+          "oklch(0.39 0.0565 309.56)",
+          "oklch(0.51 0.0665 309.56)",
+          "oklch(0.63 0.0665 309.56)",
+          "oklch(0.75 0.0565 309.56)",
+          "oklch(0.87 0.0332 309.56)",
+          "oklch(0.95 0.0133 309.56)"
+        ]
+      },
+      "plum-hover": {
+        "role": "primary",
+        "displayName": "Plum Hover",
+        "tonalRamp": [
+          "oklch(0.15 0.0217 309.71)",
+          "oklch(0.27 0.0402 309.71)",
+          "oklch(0.39 0.0526 309.71)",
+          "oklch(0.51 0.0619 309.71)",
+          "oklch(0.63 0.0619 309.71)",
+          "oklch(0.75 0.0526 309.71)",
+          "oklch(0.87 0.0310 309.71)",
+          "oklch(0.95 0.0124 309.71)"
+        ]
+      },
+      "plum-tint": {
+        "role": "primary",
+        "displayName": "Plum Tint",
+        "tonalRamp": [
+          "oklch(0.15 0.0057 313.61)",
+          "oklch(0.27 0.0107 313.61)",
+          "oklch(0.39 0.0139 313.61)",
+          "oklch(0.51 0.0164 313.61)",
+          "oklch(0.63 0.0164 313.61)",
+          "oklch(0.75 0.0139 313.61)",
+          "oklch(0.87 0.0082 313.61)",
+          "oklch(0.95 0.0033 313.61)"
+        ]
+      },
+      "brass": {
+        "role": "secondary",
+        "displayName": "Brass",
+        "tonalRamp": [
+          "oklch(0.15 0.0396 78.18)",
+          "oklch(0.27 0.0735 78.18)",
+          "oklch(0.39 0.0962 78.18)",
+          "oklch(0.51 0.1132 78.18)",
+          "oklch(0.63 0.1132 78.18)",
+          "oklch(0.75 0.0962 78.18)",
+          "oklch(0.87 0.0566 78.18)",
+          "oklch(0.95 0.0226 78.18)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "tonalRamp": [
+          "oklch(0.15 0.0041 308.32)",
+          "oklch(0.27 0.0075 308.32)",
+          "oklch(0.39 0.0099 308.32)",
+          "oklch(0.51 0.0116 308.32)",
+          "oklch(0.63 0.0116 308.32)",
+          "oklch(0.75 0.0099 308.32)",
+          "oklch(0.87 0.0058 308.32)",
+          "oklch(0.95 0.0023 308.32)"
+        ]
+      },
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Canvas",
+        "tonalRamp": [
+          "oklch(0.15 0.0022 317.75)",
+          "oklch(0.27 0.0040 317.75)",
+          "oklch(0.39 0.0052 317.75)",
+          "oklch(0.51 0.0062 317.75)",
+          "oklch(0.63 0.0062 317.75)",
+          "oklch(0.75 0.0052 317.75)",
+          "oklch(0.87 0.0031 317.75)",
+          "oklch(0.95 0.0012 317.75)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "tonalRamp": [
+          "oklch(0.15 0.0000 89.88)",
+          "oklch(0.27 0.0000 89.88)",
+          "oklch(0.39 0.0000 89.88)",
+          "oklch(0.51 0.0000 89.88)",
+          "oklch(0.63 0.0000 89.88)",
+          "oklch(0.75 0.0000 89.88)",
+          "oklch(0.87 0.0000 89.88)",
+          "oklch(0.95 0.0000 89.88)"
+        ]
+      },
+      "danger": {
+        "role": "secondary",
+        "displayName": "Danger",
+        "tonalRamp": [
+          "oklch(0.15 0.0420 21.69)",
+          "oklch(0.27 0.0780 21.69)",
+          "oklch(0.39 0.1020 21.69)",
+          "oklch(0.51 0.1200 21.69)",
+          "oklch(0.63 0.1200 21.69)",
+          "oklch(0.75 0.1020 21.69)",
+          "oklch(0.87 0.0600 21.69)",
+          "oklch(0.95 0.0240 21.69)"
+        ]
+      },
+      "focus": {
+        "role": "secondary",
+        "displayName": "Focus",
+        "tonalRamp": [
+          "oklch(0.15 0.0357 79.15)",
+          "oklch(0.27 0.0662 79.15)",
+          "oklch(0.39 0.0866 79.15)",
+          "oklch(0.51 0.1019 79.15)",
+          "oklch(0.63 0.1019 79.15)",
+          "oklch(0.75 0.0866 79.15)",
+          "oklch(0.87 0.0509 79.15)",
+          "oklch(0.95 0.0204 79.15)"
+        ]
+      },
+      "field-border": {
+        "role": "neutral",
+        "displayName": "Field Border",
+        "tonalRamp": [
+          "oklch(0.15 0.0074 308.16)",
+          "oklch(0.27 0.0137 308.16)",
+          "oklch(0.39 0.0179 308.16)",
+          "oklch(0.51 0.0211 308.16)",
+          "oklch(0.63 0.0211 308.16)",
+          "oklch(0.75 0.0179 308.16)",
+          "oklch(0.87 0.0105 308.16)",
+          "oklch(0.95 0.0042 308.16)"
+        ]
+      },
+      "draft-highlight": {
+        "role": "neutral",
+        "displayName": "Draft Highlight",
+        "tonalRamp": [
+          "oklch(0.15 0.0163 315.83)",
+          "oklch(0.27 0.0303 315.83)",
+          "oklch(0.39 0.0396 315.83)",
+          "oklch(0.51 0.0466 315.83)",
+          "oklch(0.63 0.0466 315.83)",
+          "oklch(0.75 0.0396 315.83)",
+          "oklch(0.87 0.0233 315.83)",
+          "oklch(0.95 0.0093 315.83)"
+        ]
+      },
+      "done-background": {
+        "role": "neutral",
+        "displayName": "Done Background",
+        "tonalRamp": [
+          "oklch(0.15 0.0070 159.74)",
+          "oklch(0.27 0.0129 159.74)",
+          "oklch(0.39 0.0169 159.74)",
+          "oklch(0.51 0.0199 159.74)",
+          "oklch(0.63 0.0199 159.74)",
+          "oklch(0.75 0.0169 159.74)",
+          "oklch(0.87 0.0099 159.74)",
+          "oklch(0.95 0.0040 159.74)"
+        ]
+      },
+      "done-text": {
+        "role": "neutral",
+        "displayName": "Done Text",
+        "tonalRamp": [
+          "oklch(0.15 0.0281 156.56)",
+          "oklch(0.27 0.0521 156.56)",
+          "oklch(0.39 0.0682 156.56)",
+          "oklch(0.51 0.0802 156.56)",
+          "oklch(0.63 0.0802 156.56)",
+          "oklch(0.75 0.0682 156.56)",
+          "oklch(0.87 0.0401 156.56)",
+          "oklch(0.95 0.0160 156.56)"
+        ]
+      },
+      "draft-background": {
+        "role": "neutral",
+        "displayName": "Draft Background",
+        "tonalRamp": [
+          "oklch(0.15 0.0153 89.89)",
+          "oklch(0.27 0.0284 89.89)",
+          "oklch(0.39 0.0372 89.89)",
+          "oklch(0.51 0.0438 89.89)",
+          "oklch(0.63 0.0438 89.89)",
+          "oklch(0.75 0.0372 89.89)",
+          "oklch(0.87 0.0219 89.89)",
+          "oklch(0.95 0.0088 89.89)"
+        ]
+      },
+      "draft-text": {
+        "role": "neutral",
+        "displayName": "Draft Text",
+        "tonalRamp": [
+          "oklch(0.15 0.0323 80.88)",
+          "oklch(0.27 0.0600 80.88)",
+          "oklch(0.39 0.0785 80.88)",
+          "oklch(0.51 0.0924 80.88)",
+          "oklch(0.63 0.0924 80.88)",
+          "oklch(0.75 0.0785 80.88)",
+          "oklch(0.87 0.0462 80.88)",
+          "oklch(0.95 0.0185 80.88)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Application headline",
+        "purpose": "Compact application title; responsive sizes are documented in Layout."
+      },
+      "title": {
+        "displayName": "Workspace title",
+        "purpose": "Writing and final-comment headings."
+      },
+      "section": {
+        "displayName": "Section heading",
+        "purpose": "Draft, roster row, and dialog subsections."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "General text and independent final editor."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Field labels and semibold action/navigation text."
+      },
+      "helper": {
+        "displayName": "Helper",
+        "purpose": "Instructions and secondary explanations."
+      },
+      "metadata": {
+        "displayName": "Metadata",
+        "purpose": "Counts, status text, and footer."
+      }
+    },
+    "shadows": [
+      {
+        "name": "dialog",
+        "value": "0 18px 60px #00000040",
+        "purpose": "Raised dialogs over a #23172b80 backdrop."
+      },
+      {
+        "name": "toast",
+        "value": "0 6px 24px #00000030",
+        "purpose": "Transient plum feedback above the work area."
+      }
+    ],
+    "motion": [
+      {
+        "name": "phrase-selection",
+        "value": "background-color 160ms ease-out, border-color 160ms ease-out",
+        "purpose": "Phrase rows only, within prefers-reduced-motion: no-preference."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "desktop-sticky-min",
+        "value": "1100px"
+      },
+      {
+        "name": "compact-desktop-max",
+        "value": "1100px"
+      },
+      {
+        "name": "stacked-max",
+        "value": "800px"
+      },
+      {
+        "name": "narrow-max",
+        "value": "480px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The dominant commit or copy action.",
+      "html": "<button class=\"ds-primary\">Copy final comment</button>",
+      "css": ".ds-primary{min-height:42px;padding:9px 15px;border:1px solid #c5bdcd;border-radius:6px;font:600 .875rem/1.45 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;cursor:pointer;background:var(--plum,#4d385d);border-color:var(--plum,#4d385d);color:var(--paper,#fff)}.ds-primary:hover:not(:disabled){background:var(--plum-hover,#3b2849);border-color:var(--plum-hover,#3b2849)}.ds-primary:active:not(:disabled){background:var(--plum-hover,#3b2849)}.ds-primary:focus-visible{outline:3px solid var(--focus,#9c742b);outline-offset:3px;}.ds-primary:disabled{opacity:.45;cursor:default}"
+    },
+    {
+      "name": "Secondary button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "A supporting navigation or editing action.",
+      "html": "<button class=\"ds-secondary\">Next student</button>",
+      "css": ".ds-secondary{min-height:42px;padding:9px 15px;border:1px solid #c5bdcd;border-radius:6px;font:600 .875rem/1.45 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;cursor:pointer;background:var(--paper,#fff);color:var(--plum,#4d385d)}.ds-secondary:hover:not(:disabled){background:var(--plum-tint,#f0e9f4);border-color:#9d8aaa}.ds-secondary:active:not(:disabled){background:#e4d7ec}.ds-secondary:focus-visible{outline:3px solid var(--focus,#9c742b);outline-offset:3px;}.ds-secondary:disabled{opacity:.45;cursor:default}"
+    },
+    {
+      "name": "Text action",
+      "kind": "button",
+      "refersTo": "button-text",
+      "description": "A low-emphasis editing action.",
+      "html": "<button class=\"ds-text\">Previous topic</button>",
+      "css": ".ds-text{border:0;padding:6px 0;background:transparent;color:var(--plum,#4d385d);font:600 .875rem/1.55 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;cursor:pointer}.ds-text:hover:not(:disabled){color:var(--plum-hover,#3b2849);text-decoration-thickness:2px}.ds-text:focus-visible{outline:3px solid var(--focus,#9c742b);outline-offset:3px;}.ds-text:disabled{opacity:.45;cursor:default}"
+    },
+    {
+      "name": "Text field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "A visibly bounded native editing control.",
+      "html": "<label class=\"ds-label\" for=\"ds-name\">Full name</label><input class=\"ds-field\" id=\"ds-name\" placeholder=\"Student’s full name\">",
+      "css": ".ds-label{display:block;font:600 .875rem/1.55 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;color:var(--ink,#302b36);margin-bottom:6px}.ds-field{width:100%;min-width:0;border:1px solid var(--field-border,#b9b2c0);border-radius:6px;background:var(--paper,#fff);color:var(--ink,#302b36);padding:10px 12px;font:15px/1.55 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;caret-color:var(--plum,#4d385d)}.ds-field:hover{border-color:#8c7e96}.ds-field::placeholder{color:#746d7a;opacity:1}.ds-field:focus-visible{outline:3px solid var(--focus,#9c742b);outline-offset:3px;}"
+    },
+    {
+      "name": "Main navigation",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "White navigation with plum active underline.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Main navigation\"><button class=\"ds-nav-link ds-current\" aria-current=\"page\">Write comments</button><button class=\"ds-nav-link\">Class overview</button></nav>",
+      "css": ".ds-nav{display:flex;gap:30px;background:var(--paper,#fff);border-bottom:1px solid var(--line,#dfdbe3)}.ds-nav-link{min-height:48px;border:0;border-bottom:3px solid transparent;padding:10px 0 8px;color:var(--muted,#6b6471);background:transparent;font:600 .875rem/1.55 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;cursor:pointer}.ds-nav-link.ds-current{border-bottom-color:var(--plum,#4d385d);color:var(--plum,#4d385d)}.ds-nav-link:hover{color:var(--plum,#4d385d)}.ds-nav-link:focus-visible{outline:3px solid var(--focus,#9c742b);outline-offset:3px;}"
+    },
+    {
+      "name": "Writing-group tabs",
+      "kind": "nav",
+      "refersTo": "group-tab",
+      "description": "Three broad groups with a brass selected underline.",
+      "html": "<div class=\"ds-tabs\" role=\"tablist\" aria-label=\"Comment groups\"><button class=\"ds-tab\" role=\"tab\" aria-selected=\"true\">Start &amp; finish</button><button class=\"ds-tab\" role=\"tab\" aria-selected=\"false\" tabindex=\"-1\">Learning habits</button><button class=\"ds-tab\" role=\"tab\" aria-selected=\"false\" tabindex=\"-1\">Subjects</button></div>",
+      "css": ".ds-tabs{display:flex;gap:24px;border-bottom:1px solid var(--line,#dfdbe3)}.ds-tab{min-height:49px;padding:12px 0 10px;border:0;border-bottom:3px solid transparent;border-radius:0;background:transparent;color:var(--muted,#6b6471);font:600 .875rem/1.55 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;white-space:nowrap;cursor:pointer}.ds-tab:hover{color:var(--plum,#4d385d)}.ds-tab[aria-selected=\"true\"]{color:var(--plum,#4d385d);border-bottom-color:var(--brass,#b78836)}.ds-tab:focus-visible{outline:3px solid var(--focus,#9c742b);outline-offset:3px;}"
+    },
+    {
+      "name": "Progress badges",
+      "kind": "chip",
+      "refersTo": "status",
+      "description": "Compact text-bearing progress indicators.",
+      "html": "<span class=\"ds-status\">Not started</span> <span class=\"ds-status ds-draft\">Draft</span> <span class=\"ds-status ds-done\">Done</span>",
+      "css": ".ds-status{display:inline-block;padding:3px 8px;border-radius:4px;background:#eeebf1;color:#655a6e;font:600 .75rem/1.55 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;white-space:nowrap}.ds-status.ds-draft{background:var(--draft-background,#fbefcf);color:var(--draft-text,#795812)}.ds-status.ds-done{background:var(--done-background,#e0efe6);color:var(--done-text,#2c6545)}"
+    },
+    {
+      "name": "Writing surface",
+      "kind": "card",
+      "refersTo": "writing-surface",
+      "description": "Flat white workspace with a quiet internal divider.",
+      "html": "<section class=\"ds-surface\"><div><h2 class=\"ds-title\">Build the comment</h2><p class=\"ds-helper\">Choose the phrases that fit.</p></div><div class=\"ds-aside\"><h2 class=\"ds-title\">Final comment</h2><p class=\"ds-helper\">Edit your draft, then copy it.</p></div></section>",
+      "css": ".ds-surface{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:28px;padding:24px 28px;border-radius:8px;background:var(--paper,#fff);color:var(--ink,#302b36);font:15px/1.55 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif}.ds-title{margin:0;font-size:1.375rem;font-weight:600;line-height:1.35;letter-spacing:-.02em}.ds-helper{margin:8px 0 20px;color:var(--muted,#6b6471);font-size:.8125rem}.ds-aside{padding-left:28px;border-left:1px solid var(--line,#dfdbe3)}@media(max-width:800px){.ds-surface{grid-template-columns:1fr;padding:20px;gap:24px}.ds-aside{padding:20px 0 0;border-left:0;border-top:1px solid var(--line,#dfdbe3)}}"
+    },
+    {
+      "name": "Selected phrase",
+      "kind": "custom",
+      "refersTo": "phrase-option-selected",
+      "description": "A full wrapping sentence with native radio state and selected tint.",
+      "html": "<label class=\"ds-phrase ds-chosen\"><input type=\"radio\" name=\"ds-phrase-choice\" checked><span>Alex approaches new learning with curiosity and enthusiasm.</span></label>",
+      "css": ".ds-phrase{display:flex;align-items:start;gap:12px;border:1px solid #d9d3de;border-radius:6px;padding:16px;color:var(--ink,#302b36);font:400 .875rem/1.55 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;cursor:pointer}.ds-phrase:hover{border-color:#b8a6c4;background:#faf7fc}.ds-phrase.ds-chosen{background:var(--plum-tint,#f0e9f4);border-color:#897096}.ds-phrase input{accent-color:var(--plum,#4d385d);width:17px;height:17px;flex:0 0 17px;margin:3px 0 0;padding:0}.ds-phrase input:focus-visible{outline:3px solid var(--focus,#9c742b);outline-offset:3px;}.ds-phrase span{overflow-wrap:anywhere}@media(prefers-reduced-motion:no-preference){.ds-phrase{transition:background-color 160ms ease-out,border-color 160ms ease-out}}"
+    },
+    {
+      "name": "Live draft",
+      "kind": "custom",
+      "refersTo": "live-draft",
+      "description": "Tinted draft inset highlighting the current topic sentence.",
+      "html": "<section class=\"ds-live\"><h3 class=\"ds-live-title\">Live draft</h3><p class=\"ds-draft-copy\">Alex is making steady progress. <mark class=\"ds-mark\">Alex approaches new learning with curiosity and enthusiasm.</mark></p></section>",
+      "css": ".ds-live{background:var(--plum-tint,#f0e9f4);padding:18px 20px;border-radius:6px;color:var(--ink,#302b36);font:15px/1.55 -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif}.ds-live-title{margin:0 0 8px;color:var(--plum,#4d385d);font-size:1rem;font-weight:600}.ds-draft-copy{margin:0;font-size:.875rem;min-height:54px;max-height:230px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}.ds-mark{background:var(--draft-highlight,#e0cbe9);color:#392744;border-radius:2px;padding:1px 0}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Focused writing desk",
+    "overview": "The Focused writing desk is a calm, practical writing environment. A compact plum masthead anchors white work surfaces on lavender-white canvas; brass is a small orientation cue. Familiar system sans keeps attention on student names and complete phrases.\n\nThe built interface uses restrained underlines, visible field boundaries, and tonal selection states. Its personality comes from proportion, whitespace, and useful text rather than decorative imagery. There are no shipping raster assets.",
+    "keyCharacteristics": [
+      "Compact, sentence-case hierarchy.",
+      "White editing surfaces with plum interaction states.",
+      "Quiet underline navigation and clearly bounded controls.",
+      "Tonal draft feedback with a distinct final writing surface."
+    ],
+    "rules": [
+      {
+        "name": "The Brass Orientation Rule",
+        "body": "Use brass for the selected writing-group underline; keep primary actions and selected text plum.",
+        "section": "colors"
+      },
+      {
+        "name": "The Readable Phrase Rule",
+        "body": "Show full phrases in wrapping text, with text labels and native radio state supporting the selected tint.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Desk Rule",
+        "body": "Keep work surfaces flat. Reserve cast shadows for dialogs and transient toast feedback.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use the existing plum, brass, lavender-white, and white roles.",
+      "Do keep navigation quiet and selected states visibly distinct.",
+      "Do show full phrases and preserve a separate final editor.",
+      "Do retain visible keyboard focus and reduced-motion behavior."
+    ],
+    "donts": [
+      "Don't restore rainbow category colors.",
+      "Don't expand every phrase category into a competing tab.",
+      "Don't add decorative raster imagery or shadows to ordinary work surfaces."
+    ]
+  }
+}

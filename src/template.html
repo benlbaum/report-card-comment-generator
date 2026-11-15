@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Report Card Comment Builder</title>
+  <style>/* STYLES */</style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to comments</a>
+  <div class="app">
+    <header class="app-header">
+      <div><h1>Report Card Comment Builder</h1><p id="saveStatus" role="status" hidden></p></div>
+      <button id="shareBtn" class="button">Share &amp; back up</button>
+    </header>
+    <nav class="main-nav" aria-label="Main navigation">
+      <button class="nav-link active" data-view="write" aria-current="page">Write comments</button>
+      <button class="nav-link" data-view="overview">Class overview <span id="classCount" class="count">4</span></button>
+      <div class="setup-nav"><button class="nav-link secondary-nav" data-view="roster">Student roster</button><button class="nav-link secondary-nav" data-view="bank">Phrase bank</button></div>
+    </nav>
+    <div id="undoNotice" class="notice" hidden><span id="undoText"></span><button id="undoBtn" class="text-button">Undo</button><button id="dismissUndo" class="text-button">Dismiss</button></div>
+    <main id="main" tabindex="-1">
+      <section id="writeView" aria-labelledby="writeHeading">
+        <div class="workspace">
+          <div class="selection-column">
+          <div class="student-toolbar">
+            <h2 id="writeHeading" class="visually-hidden">Comment</h2>
+            <div class="student-picker field"><div class="topic-label"><label for="studentSelect">Student</label><span id="studentPosition" class="muted" aria-live="polite"></span><a id="editStudentDetails" class="text-button student-edit-link" href="#rosterPanel">Edit details</a></div><select id="studentSelect"></select></div>
+            <div class="toolbar-actions"><button id="prevStudent" class="button" aria-label="Previous student">Previous</button><button id="nextStudent" class="button" aria-label="Next student">Next</button></div>
+            <span id="studentStatus" class="visually-hidden"></span>
+          </div>
+            <div id="categoryPanel" class="category-panel" role="region" aria-label="Topic phrases"></div>
+          </div>
+          <aside class="comment-column" aria-label="Comment preview and final text">
+            <h2 id="finalHeading"><label for="finalText">Final comment</label></h2>
+            <section class="draft-section" aria-labelledby="draftHeading">
+              <div class="section-heading"><h3 id="draftHeading">Live draft</h3><span id="draftCount" class="muted"></span></div>
+              <p id="draftBox" class="draft-box"></p>
+              <p id="scoreWarning" class="inline-warning" hidden>Complete the selected value entries to finish this draft.</p>
+              <div class="draft-actions"><button id="useDraft" class="button">Use draft</button><span id="selectionCount" class="muted"></span></div>
+            </section>
+            <section class="final-section" aria-labelledby="finalHeading">
+              <textarea id="finalText" rows="10" placeholder="Write or edit your comment…"></textarea>
+              <div class="final-meta"><span id="charCount">0 / 1,000 characters</span><button id="clearFinal" class="text-button">Clear</button></div>
+              <div class="actions"><button id="copyFinal" class="button primary">Copy final comment</button><button id="markDone" class="button">Mark done &amp; next</button></div>
+            </section>
+          </aside>
+        </div>
+      </section>
+      <section id="overviewView" aria-labelledby="overviewHeading" hidden>
+        <div class="page-heading overview-heading"><h2 id="overviewHeading">Class overview</h2><button id="exportComments" class="button primary">Export comments</button></div>
+        <p id="classProgress" class="progress-summary"></p>
+        <div class="overview-filters"><div class="field"><label for="searchStudents">Find a student</label><input type="search" id="searchStudents" placeholder="Search names"></div><div class="field"><label for="filterStatus">Progress</label><select id="filterStatus"><option value="">All students</option><option>Not started</option><option>Draft</option><option>Done</option></select></div><div class="field" id="overviewTopicField"><label for="overviewTopic">Show comments</label><select id="overviewTopic"></select></div></div>
+        <div id="overviewPanel" role="region" aria-label="Class comments" tabindex="0"><div id="overviewList"></div></div>
+      </section>
+      <section id="rosterView" aria-labelledby="rosterHeading" hidden>
+        <div class="page-heading roster-heading"><h2 id="rosterHeading" class="visually-hidden">Student roster</h2><div class="class-settings"><div class="field"><label for="className" class="visually-hidden">Class name</label><input id="className" maxlength="100" placeholder="Class name"></div><button id="newClass" class="text-button danger">Start a new class</button></div><button id="addStudent" class="button primary">Add student</button></div>
+        <p id="rosterSummary" class="progress-summary"></p>
+        <div class="roster-filters"><div class="field"><label for="searchRoster">Find a student</label><input type="search" id="searchRoster" placeholder="Search names"></div></div>
+        <div id="rosterPanel" role="region" aria-label="Student roster" tabindex="0"><div id="rosterList"></div></div>
+      </section>
+      <section id="bankView" aria-labelledby="bankHeading" hidden>
+        <div class="page-heading"><h2 id="bankHeading">Phrase bank</h2><div class="actions"><button id="exportBank" class="button">Export bank</button><button id="importBank" class="button">Import bank</button><button id="addCategory" class="button">Add topic</button></div></div>
+        <input id="bankFile" class="visually-hidden" type="file" accept=".json,application/json" aria-label="Choose a phrase bank file" tabindex="-1">
+        <p id="bankFileError" class="inline-warning" role="alert" hidden></p>
+        <section id="bankImportPreview" class="bank-import-preview" aria-label="Bank import preview" hidden></section>
+        <div class="bank-tools"><div class="bank-topic-nav"><div class="bank-topic field"><div class="topic-label"><label for="bankTopic">Topic</label><span id="bankPosition" class="muted"></span></div><select id="bankTopic"></select></div><button id="previousBankTopic" class="button" aria-label="Previous bank topic">Previous</button><button id="nextBankTopic" class="button" aria-label="Next bank topic">Next</button></div><div class="actions"><button id="changeBankOrder" class="button">Change order</button><button id="removeCategory" class="text-button danger">Remove topic</button></div></div>
+        <div id="bankPanel">
+          <h3 id="bankCategoryName" class="visually-hidden"></h3>
+          <div class="bank-config"><div class="field bank-name-field"><label for="bankTopicName">Topic name</label><input id="bankTopicName" maxlength="100" autocomplete="off" aria-describedby="topicNameError"><p id="topicNameError" class="inline-warning" role="alert" hidden></p></div><div class="field"><label for="topicType">Entry type</label><select id="topicType"><option value="selection">Selection</option><option value="value">Value Entry</option></select></div></div>
+          <div id="valueSettings" class="value-settings" hidden>
+            <div class="field"><label for="valueType">Value type</label><select id="valueType"><option value="number">Number</option><option value="text">Text</option></select></div>
+            <div class="field"><label for="valueUnit">Unit</label><input id="valueUnit" maxlength="30" placeholder="%, words/min…"></div>
+            <div class="field number-setting"><label for="valueMin">Minimum</label><input id="valueMin" type="number" step="any" placeholder="None"></div>
+            <div class="field number-setting"><label for="valueMax">Maximum</label><input id="valueMax" type="number" step="any" placeholder="None"></div>
+            <div class="field value-template"><label for="valuePhrase">Matching phrase</label><textarea id="valuePhrase" rows="1" maxlength="10000" placeholder="[HeShe] has a Fluency score of [Value]%."></textarea><p class="helper">Use [Value] where the entry belongs. Leave a student's entry blank to skip it.</p></div>
+          </div>
+          <details class="token-help"><summary>Phrase tokens</summary><p class="helper tokens"><code>[FullName]</code> <code>[PrefName]</code> <code>[HeShe]</code> <code>[HeSheThey]</code> <code>[HisHerTheir]</code> <code>[HimHerThem]</code> <code>[Value]</code> <span>[Score] also works in older phrases.</span></p></details>
+          <div id="phraseEditor"></div>
+          <button id="addPhrase" class="button">Add phrase</button>
+        </div>
+        <div class="bank-save-bar"><span id="bankEditStatus" class="muted">No unsaved changes</span><div class="actions"><button id="discardBank" class="button" disabled>Discard changes</button><button id="saveBank" class="button primary" disabled>Save bank</button></div></div>
+      </section>
+    </main>
+  </div>
+  <dialog id="shareDialog" aria-labelledby="shareHeading">
+    <div class="dialog-heading"><h2 id="shareHeading">Share &amp; back up</h2><button id="closeShare" class="button">Close</button></div>
+    <section class="share-section"><h3>Share roster</h3><p>Send the roster file to your co-teacher to import.</p><p class="helper">Names and pronouns only. Comments and scores stay separate; files don’t sync.</p><button id="exportRoster" class="button primary">Export student roster</button></section>
+    <section class="share-section"><h3>Class backup</h3><p>Includes students, selections, scores, comments, and phrases.</p><button id="exportBackup" class="button">Export class backup</button></section>
+    <section class="share-section"><h3>Import</h3><p>Add a roster or restore a backup.</p><label class="file-label" for="importFile">Choose a roster or backup (.json)</label><input id="importFile" type="file" accept=".json,application/json"><p id="importError" class="inline-warning" role="alert" hidden></p><div id="importPreview" hidden></div></section>
+  </dialog>
+  <dialog id="confirmDialog" aria-labelledby="confirmHeading"><h2 id="confirmHeading"></h2><p id="confirmMessage"></p><div class="actions"><button id="cancelConfirm" class="button">Cancel</button><button id="acceptConfirm" class="button primary">Continue</button></div></dialog>
+  <dialog id="orderDialog" aria-labelledby="orderHeading">
+    <h2 id="orderHeading">Change order</h2>
+    <p class="helper">Drag rows or use Up/Down. Save the bank to keep changes.</p>
+    <div class="field"><label for="orderScope">Reorder</label><select id="orderScope"></select></div>
+    <ol id="orderList" class="order-list" aria-label="Reorder bank items"></ol>
+    <p id="orderAnnouncement" class="visually-hidden" role="status"></p>
+    <div class="actions order-actions"><button id="cancelOrder" class="button">Cancel</button><button id="applyOrder" class="button primary" disabled>Apply order</button></div>
+  </dialog>
+  <dialog id="categoryDialog" aria-labelledby="categoryDialogHeading"><form id="categoryForm"><h2 id="categoryDialogHeading">Add topic</h2><div class="field"><label for="newCategoryName">Topic name</label><input id="newCategoryName" maxlength="100" required placeholder="For example, Writing"></div><p id="categoryError" role="alert" class="inline-warning" hidden></p><div class="actions"><button type="button" id="cancelCategory" class="button">Cancel</button><button class="button primary">Add topic</button></div></form></dialog>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <noscript>This app needs JavaScript enabled to build and save comments.</noscript>
+  <script>/* APPLICATION */</script>
+</body>
+</html>

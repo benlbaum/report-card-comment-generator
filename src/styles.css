@@ -156,6 +156,8 @@ main { padding: 0 0 24px; margin-inline: -40px; }
 .pronoun-error { display: block; color: var(--danger); font-size: .75rem; }
 .add-student-bottom { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 10px; margin-top: 12px; }
 .student-row { display: grid; grid-template-columns: 190px 100px minmax(0, 1fr); gap: 20px; padding: 8px 0; border-bottom: 1px solid var(--line); align-items: center; }
+.student-row.comment-row { grid-template-columns: 190px 100px minmax(0, 1fr) auto; }
+.row-copy { min-height: 36px; padding: 6px 12px; font-size: .8125rem; }
 .remove-student { min-height: 36px; font-size: .8125rem; white-space: nowrap; }
 .student-row h3 { min-width: 0; font-size: .875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .student-name { display: block; width: 100%; min-height: 36px; padding: 6px 0; border: 0; background: transparent; color: var(--plum); font: inherit; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
@@ -261,6 +263,8 @@ dialog::backdrop { background: #23172b80; }
   .comment-column { padding: 20px 0 0; border-left: 0; border-top: 1px solid var(--line); }
   #overviewView, #rosterView, #bankView { padding: 20px; }
   .student-row { grid-template-columns: minmax(0, 1fr) 88px; gap: 10px; }
+  .student-row.comment-row { grid-template-columns: minmax(0, 1fr) auto auto; }
+  .comment-row > .row-copy { grid-column: 3; grid-row: 1; }
   .student-row > .row-comment { grid-column: 1 / -1; grid-row: 2; }
   .student-row.topic-row { min-width: 500px; grid-template-columns: 130px 88px minmax(180px, 1fr); }
   .student-row.topic-row > .row-comment { grid-column: 3; grid-row: 1; }

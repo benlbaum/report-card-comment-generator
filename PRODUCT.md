@@ -48,3 +48,5 @@ Student roster setup lives in its own tab alongside Phrase bank. Class overview 
 Teachers can sort students A–Z by first, last, or preferred name. Sorting persists across views and exports, retains the current student and all work, and supports Undo.
 
 Transfer controls live in the relevant sections. Class overview exports/imports complete JSON class backups, including all comments, scores, selections, and the bank, while retaining CSV comment export. Import previews the class before a confirmed replacement and supports Undo. Student roster handles identity-only transfers; Phrase bank handles bank-only transfers. The masthead contains no sharing menu.
+
+Class overview provides a Copy action per saved final comment, including fallbacks for browsers without clipboard access. Distribution includes a clean self-contained public/index.html with no embedded students; a first-time teacher starts on Student roster. The same file can be hosted on a static HTTPS website or sent as an offline HTML tool. Each browser/device retains independent work; there is no automatic synchronization or server-side student storage.

@@ -270,15 +270,18 @@ function renderOverview() {
     const selection = category ? s.selections[category] : '';
     const comment = category ? Core.topicSentence(s, state, category) : s.finalComment;
     const config = state.topicSettings[category];
-    return `<article class="student-row ${category ? 'topic-row' : ''}" data-student="${escapeHTML(s.id)}"><h3><button class="student-name" data-open="${escapeHTML(s.id)}" title="${escapeHTML(displayName(s))}" aria-label="Open comment for ${escapeHTML(displayName(s))}">${escapeHTML(displayName(s))}</button></h3><span class="status ${s.status === 'Done' ? 'done' : s.status === 'Draft' ? 'draft' : ''}">${s.status}</span>
+    return `<article class="student-row ${category ? 'topic-row' : 'comment-row'}" data-student="${escapeHTML(s.id)}"><h3><button class="student-name" data-open="${escapeHTML(s.id)}" title="${escapeHTML(displayName(s))}" aria-label="Open comment for ${escapeHTML(displayName(s))}">${escapeHTML(displayName(s))}</button></h3><span class="status ${s.status === 'Done' ? 'done' : s.status === 'Draft' ? 'draft' : ''}">${s.status}</span>
       <div class="row-comment">${category ? config.type === 'value' ? `<label class="visually-hidden" for="overview-value-${escapeHTML(s.id)}">${escapeHTML(valueLabel(category, config))} for ${escapeHTML(displayName(s))}</label>${valueInput(s, category, 'overview-value-' + s.id, `data-overview-value="${escapeHTML(s.id)}"`)}` : `<label class="visually-hidden" for="overview-choice-${escapeHTML(s.id)}">${escapeHTML(category)} phrase for ${escapeHTML(displayName(s))}</label><select id="overview-choice-${escapeHTML(s.id)}" data-choice="${escapeHTML(s.id)}">${phraseOptions(category, selection)}</select>` : `<p class="${comment ? '' : 'muted'}" title="${escapeHTML(comment || 'No final comment yet.')}">${escapeHTML(comment || 'No final comment yet.')}</p>`}</div>
-      </article>`;
+      ${category ? '' : `<button class="button row-copy" data-copy-comment="${escapeHTML(s.id)}" aria-label="Copy comment for ${escapeHTML(displayName(s))}" ${s.finalComment.trim() ? '' : 'disabled'}>Copy</button>`}</article>`;
   }).join('') : `<p class="empty-state">${state.students.length ? 'No students match this progress filter.' : 'No students yet.'}</p>`;
   $('overviewList').querySelectorAll('[data-open]').forEach(button => { button.onclick = () => {
     currentId = button.dataset.open;
     if (overviewCategory !== 'Final comments') activeCategory = overviewCategory;
     setView('write');
     $('finalText').focus();
+  }; });
+  $('overviewList').querySelectorAll('[data-copy-comment]').forEach(button => { button.onclick = () => {
+    copyStudentComment(state.students.find(student => student.id === button.dataset.copyComment));
   }; });
   $('overviewList').querySelectorAll('[data-choice]').forEach(select => { select.onchange = () => {
     const s = state.students.find(item => item.id === select.dataset.choice);
@@ -742,19 +745,36 @@ $('clearFinal').onclick = async () => {
   $('finalText').value = '';
   updatePreview();
 };
-$('copyFinal').onclick = async () => {
-  const text = current()?.finalComment;
+async function copyStudentComment(student) {
+  const text = student?.finalComment;
   if (!text?.trim()) return;
-  try { await navigator.clipboard.writeText(text); toast('Final comment copied.'); }
-  catch {
-    $('finalText').focus();
-    $('finalText').select();
+  let copied = false;
+  try { await navigator.clipboard.writeText(text); copied = true; } catch {}
+  if (!copied) {
+    const active = document.activeElement;
+    const field = document.createElement('textarea');
+    field.className = 'visually-hidden';
+    field.readOnly = true;
+    field.value = text;
+    field.setAttribute('aria-label', 'Comment to copy');
+    document.body.append(field);
     try {
-      if (!document.execCommand('copy')) throw new Error('Copy unavailable');
-      toast('Final comment copied.');
-    } catch { toast('Comment selected. Press Ctrl+C or Command+C to copy.'); }
+      field.focus({preventScroll:true});
+      field.select();
+      copied = document.execCommand?.('copy') === true;
+    } catch {} finally {
+      field.remove();
+      active?.focus({preventScroll:true});
+    }
   }
-};
+  if (copied) { toast(`Comment copied for ${displayName(student)}.`); return; }
+  currentId = student.id;
+  setView('write');
+  $('finalText').focus();
+  $('finalText').select();
+  toast('Comment selected. Press Ctrl+C or Command+C to copy.');
+}
+$('copyFinal').onclick = () => copyStudentComment(current());
 $('markDone').onclick = () => {
   if (!current()?.finalComment.trim() || !current()?.fullName.trim()) return;
   current().status = 'Done';
@@ -1026,4 +1046,5 @@ window.addEventListener('resize', () => {
 resetBankDraft();
 save();
 renderWrite();
+if (!state.students.length) setView('roster');
 if (startupMessage) toast(startupMessage);

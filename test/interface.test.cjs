@@ -8,11 +8,11 @@ const original = require('../src/data.json');
 const Core = require('../src/core.cjs');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
-function setup(t, stored) {
+function setup(t, stored, source = html) {
   const errors = [];
   const console = new VirtualConsole();
   console.on('jsdomError', error => errors.push(error));
-  const dom = new JSDOM(html, {
+  const dom = new JSDOM(source, {
     url: 'https://report-card.test/', runScripts: 'dangerously', virtualConsole: console,
     beforeParse(window) {
       window.HTMLDialogElement.prototype.showModal = function () { this.open = true; };
@@ -31,6 +31,80 @@ function setup(t, stored) {
   const choice = () => dom.window.document.querySelector('[name="phraseChoice"]:checked')?.value;
   return { window: dom.window, document: dom.window.document, $, change, saved, tab, choose, choice };
 }
+test('each class comment copies its own saved text without changing the current student or work', async t => {
+  const state = Core.validate(original);
+  state.students[0].finalComment = 'First student comment.';
+  state.students[1].finalComment = 'Second student comment.\nKeep this line break.';
+  const ui = setup(t, state);
+  const copied = [];
+  Object.defineProperty(ui.window.navigator, 'clipboard', {configurable:true,value:{writeText:async text=>copied.push(text)}});
+  const before = ui.saved();
+  ui.document.querySelector('[data-view="overview"]').click();
+  const buttons = ui.$('overviewList').querySelectorAll('[data-copy-comment]');
+  assert.equal(buttons.length, 4);
+  assert.equal(buttons[2].disabled, true);
+  buttons[1].click();
+  await tick();
+  assert.deepEqual(copied, [state.students[1].finalComment]);
+  assert.equal(ui.$('overviewView').hidden, false);
+  assert.equal(ui.$('studentSelect').value, state.students[0].id);
+  assert.deepEqual(ui.saved(), before);
+  ui.change('overviewTopic', 'Beginning');
+  assert.equal(ui.$('overviewList').querySelector('[data-copy-comment]'), null);
+});
+test('class comment copy falls back to browser copying and cleans up its temporary field', async t => {
+  const state = Core.validate(original);
+  state.students[1].finalComment = 'Copy the second comment through the fallback.';
+  const ui = setup(t, state);
+  Object.defineProperty(ui.window.navigator, 'clipboard', {configurable:true,value:{writeText:async()=>{throw new Error('Denied');}}});
+  let copied;
+  ui.document.execCommand = command => {
+    assert.equal(command, 'copy');
+    copied = ui.document.activeElement.value;
+    return true;
+  };
+  ui.document.querySelector('[data-view="overview"]').click();
+  const button = ui.$('overviewList').querySelectorAll('[data-copy-comment]')[1];
+  button.focus();
+  button.click();
+  await tick();
+  assert.equal(copied, state.students[1].finalComment);
+  assert.equal(ui.$('overviewView').hidden, false);
+  assert.equal(ui.document.activeElement, button);
+  assert.equal(ui.document.querySelector('[aria-label="Comment to copy"]'), null);
+});
+test('when clipboard access fails the requested student comment is selected for manual copying', async t => {
+  const state = Core.validate(original);
+  state.students[1].finalComment = 'Select this particular student comment.';
+  const ui = setup(t, state);
+  ui.document.execCommand = () => false;
+  const before = ui.saved();
+  ui.document.querySelector('[data-view="overview"]').click();
+  ui.$('overviewList').querySelectorAll('[data-copy-comment]')[1].click();
+  await tick();
+  assert.equal(ui.$('writeView').hidden, false);
+  assert.equal(ui.$('studentSelect').value, state.students[1].id);
+  assert.equal(ui.$('finalText').value, state.students[1].finalComment);
+  assert.equal(ui.$('finalText').selectionStart, 0);
+  assert.equal(ui.$('finalText').selectionEnd, state.students[1].finalComment.length);
+  assert.match(ui.$('toast').textContent, /Press Ctrl\+C or Command\+C/);
+  assert.deepEqual(ui.saved(), before);
+});
+test('the shareable HTML has no embedded students, runs alone, and retains existing browser work', t => {
+  const shared = readFileSync(require('node:path').join(__dirname, '../public/index.html'), 'utf8');
+  const fresh = setup(t, undefined, shared);
+  assert.equal(fresh.saved().students.length, 0);
+  assert.equal(fresh.$('rosterView').hidden, false);
+  assert.equal(fresh.saved().categoryOrder.length, 16);
+  for (const student of original.students.filter(s=>s.fullName.trim())) assert.equal(shared.includes(student.fullName), false);
+  assert.equal(fresh.document.querySelector('script[src], link[href], img[src], iframe[src]'), null);
+  fresh.$('addStudent').click();
+  assert.equal(fresh.saved().students.length, 1);
+  const existing = Core.validate(original);
+  existing.students[0].finalComment = 'Existing browser work stays intact.';
+  const upgrade = setup(t, existing, shared);
+  assert.deepEqual(upgrade.saved().students, existing.students);
+});
 
 function editBankTopic(document, name = document.getElementById('bankTopic').value) {
   const index = [...document.getElementById('bankTopic').options].findIndex(option => option.value === name);

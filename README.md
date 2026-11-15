@@ -20,7 +20,7 @@ Use **public/index.html** for distribution. It is a clean, self-contained copy w
 
 To move from a downloaded file to a hosted website, export a full class backup first, then import it at the new address. Use roster exports for names/pronouns, bank exports for shared phrases, and class backups for the complete work, including comments.
 
-For hosting, publish only the clean **public/** output. The repository remains private and no website has been published by the build. [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages) is one static-hosting option; availability depends on repository visibility and the GitHub plan. A school-managed static host can serve the same file.
+The hosted app is at **https://benlbaum.github.io/report-card-comment-generator/**. The repository is public; the Pages workflow publishes only the clean **public/** output, with no embedded student records. Every push to `main` installs dependencies, rebuilds both HTML versions, runs the regression tests, and deploys the clean app after the tests pass. The same workflow can be run manually from GitHub Actions. Teachers keep their existing browser work at the same website address.
 
 ## Reusing a phrase bank
 

@@ -36,7 +36,7 @@ function editBankTopic(document, name = document.getElementById('bankTopic').val
   const index = [...document.getElementById('bankTopic').options].findIndex(option => option.value === name);
   document.querySelector(`[data-edit-topic="${index}"]`).click();
 }
-test('phrase bank opens to a topic list and Edit drills into settings while All topics retains pending work', t => {
+test('phrase bank opens to a topic list and Edit drills into settings while returning to the list retains pending work', t => {
   const ui = setup(t);
   ui.document.querySelector('[data-view="bank"]').click();
   assert.equal(ui.$('bankIndex').hidden, false);

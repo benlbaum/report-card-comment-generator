@@ -190,7 +190,7 @@ main { padding: 0 0 24px; margin-inline: -40px; }
 .bank-topic-meta { display: contents; }
 .bank-topic-meta span { min-width: 0; color: var(--muted); font-size: .8125rem; overflow-wrap: anywhere; }
 .bank-topic-row > .button { padding-inline: 12px; }
-.bank-back { min-height: 42px; margin-bottom: 8px; }
+.bank-back { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 16px; background: var(--plum-tint); }
 .bank-topic-nav select, .bank-topic-nav .button { height: 42px; }
 .bank-topic-nav .button { padding: 9px 10px; }
 .token-help { font-size: .8125rem; color: var(--muted); }

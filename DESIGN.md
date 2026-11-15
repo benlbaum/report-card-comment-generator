@@ -229,7 +229,7 @@ Native inputs, selects, and textareas use white interiors, the field-border toke
 
 Where customizable selects are supported, select menus are anchored outside their fields with a (6px) gap. They choose the side with more space, stay within the viewport, and scroll long option lists. The native select, keyboard behavior, and change events are preserved. Other browsers retain their standard select rendering. Menus use the surface radius and a neutral overlay shadow (`0 8px 24px #00000030`).
 
-Bank option rows keep the editable option label, phrase textarea, Up/Down controls, and Remove action on one line on desktop. The action controls wrap below the phrase on phones. Labels use a narrow fixed column to the left, while textareas fill the remaining page width. Their default is one line with minimum height (44px) and line-height (1.5). The boxes automatically grow and shrink to fit wrapped text while editing and when the page width changes; vertical resizing remains available.
+Bank option rows contain a single phrase textarea, Up/Down controls, and Remove action on one line on desktop. The phrase textarea fills the space up to the actions; there is no separate label field. The action controls wrap below the phrase on phones. Textareas fill the available page width. Their default is one line with minimum height (44px) and line-height (1.5). The boxes automatically grow and shrink to fit wrapped text while editing and when the page width changes; vertical resizing remains available.
 
 ### Navigation
 

@@ -479,15 +479,14 @@ test('teachers configure optional value topics, reorder them, and retain separat
   assert.equal(reload.$('topicValue').value, '0');
   assert.equal(reload.saved().students[1].values['Reading rate'], 120);
 });
-test('selection labels and phrases can be added, reordered, and removed without corrupting selections', t => {
+test('phrase boxes use a single editable field and retain selections after reordering and removal', t => {
   const ui = setup(t);
   const {$, change, document, saved} = ui;
   document.querySelector('[data-view="bank"]').click();
   addTopic(ui, 'Effort', 'selection');
-  change('option-label-0', 'Strong effort', 'input');
+  assert.equal($('phraseEditor').querySelector('input'), null);
   change('phrase-0', '[PrefName] puts care into each task.', 'input');
   $('addPhrase').click();
-  change('option-label-1', 'Growing effort', 'input');
   change('phrase-1', '[PrefName] is building persistence.', 'input');
   document.querySelector('[data-option-up="1"]').click();
   $('saveBank').click();
@@ -495,7 +494,7 @@ test('selection labels and phrases can be added, reordered, and removed without 
   change('topicSelect', 'Effort');
   ui.choose('0');
   assert.match($('draftBox').textContent, /Addy is building persistence/);
-  assert.equal(saved().categories.Effort[0].label, 'Growing effort');
+  assert.equal(saved().categories.Effort[0].phrase, '[PrefName] is building persistence.');
   document.querySelector('[data-view="bank"]').click();
   document.querySelector('[data-option-down="0"]').click();
   document.querySelector('[data-remove="0"]').click();

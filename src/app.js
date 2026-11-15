@@ -107,7 +107,7 @@ function renderWrite() {
 }
 function phraseOptions(category, selected) {
   return `<option value="">Skip this category</option>` + (state.categories[category] || []).map((opt, i) =>
-    `<option value="${i}" ${opt.phrase === selected ? 'selected' : ''}>${escapeHTML(opt.label || `Option ${i + 1}: ${opt.phrase.replace(/\[[^\]]+\]/g, '…')}`)}</option>`).join('');
+    `<option value="${i}" ${opt.phrase === selected ? 'selected' : ''}>${escapeHTML(`Option ${i + 1}: ${opt.phrase.replace(/\[[^\]]+\]/g, '…')}`)}</option>`).join('');
 }
 function valueLabel(topic, config) { return topic + (config.unit ? ` (${config.unit})` : ''); }
 function valueInput(s, cat, id, extra = '') {
@@ -397,7 +397,7 @@ function renderBank() {
   fitPhraseBox($('valuePhrase'));
   $('phraseEditor').hidden = config.type === 'value';
   $('addPhrase').hidden = config.type === 'value';
-  $('phraseEditor').innerHTML = phrases.length ? phrases.map((opt, i) => `<div class="phrase-edit-row"><div class="option-label-field"><label class="visually-hidden" for="option-label-${i}">Option ${i + 1} label</label><input id="option-label-${i}" data-option-label="${i}" maxlength="300" value="${escapeHTML(opt.label)}" placeholder="Option ${i + 1}"></div><label class="visually-hidden" for="phrase-${i}">Option ${i + 1} phrase</label><textarea id="phrase-${i}" data-index="${i}" rows="1" maxlength="10000">${escapeHTML(opt.phrase)}</textarea><div class="option-actions"><button class="text-button" data-option-up="${i}" aria-label="Move option ${i + 1} up" ${i === 0 ? 'disabled' : ''}>Up</button><button class="text-button" data-option-down="${i}" aria-label="Move option ${i + 1} down" ${i === phrases.length - 1 ? 'disabled' : ''}>Down</button><button class="text-button danger" data-remove="${i}" aria-label="Remove option ${i + 1}">Remove</button></div></div>`).join('') : '<p class="empty-state">Add a phrase to this topic.</p>';
+  $('phraseEditor').innerHTML = phrases.length ? phrases.map((opt, i) => `<div class="phrase-edit-row"><label class="visually-hidden" for="phrase-${i}">Option ${i + 1} phrase</label><textarea id="phrase-${i}" data-index="${i}" rows="1" maxlength="10000">${escapeHTML(opt.phrase)}</textarea><div class="option-actions"><button class="text-button" data-option-up="${i}" aria-label="Move option ${i + 1} up" ${i === 0 ? 'disabled' : ''}>Up</button><button class="text-button" data-option-down="${i}" aria-label="Move option ${i + 1} down" ${i === phrases.length - 1 ? 'disabled' : ''}>Down</button><button class="text-button danger" data-remove="${i}" aria-label="Remove option ${i + 1}">Remove</button></div></div>`).join('') : '<p class="empty-state">Add a phrase to this topic.</p>';
   $('phraseEditor').querySelectorAll('textarea').forEach(ta => {
     fitPhraseBox(ta);
     ta.oninput = () => {
@@ -407,11 +407,6 @@ function renderBank() {
       updateBankStatus();
     };
   });
-  $('phraseEditor').querySelectorAll('[data-option-label]').forEach(input => { input.oninput = () => {
-    phrases[Number(input.dataset.optionLabel)].label = input.value;
-    bankDirty = true;
-    updateBankStatus();
-  }; });
   for (const [selector, key, offset] of [['[data-option-up]', 'optionUp', -1], ['[data-option-down]', 'optionDown', 1]]) {
     $('phraseEditor').querySelectorAll(selector).forEach(button => { button.onclick = () => {
       const i = Number(button.dataset[key]);
@@ -445,7 +440,7 @@ function checkedBankDraft() {
 function orderItems() {
   return $('orderScope').value === 'topics' ? orderDraft.categoryOrder : orderDraft.categories[bankCategory];
 }
-function orderName(item) { return typeof item === 'string' ? item : item.label || item.phrase || 'Empty phrase'; }
+function orderName(item) { return typeof item === 'string' ? item : item.phrase || 'Empty phrase'; }
 function moveOrderItem(from, to) {
   const items = orderItems();
   if (from === to || from < 0 || to < 0 || from >= items.length || to >= items.length) return;
@@ -461,7 +456,7 @@ function clearOrderDrag() {
 }
 function renderOrderList() {
   const items = orderItems();
-  $('orderList').innerHTML = items.map((item, i) => `<li class="order-row" draggable="true" data-order-index="${i}"><span class="order-grip" aria-hidden="true"><svg width="20" height="24" viewBox="0 0 20 24" fill="currentColor"><circle cx="6" cy="6" r="1.5"/><circle cx="14" cy="6" r="1.5"/><circle cx="6" cy="12" r="1.5"/><circle cx="14" cy="12" r="1.5"/><circle cx="6" cy="18" r="1.5"/><circle cx="14" cy="18" r="1.5"/></svg></span><span class="order-name">${escapeHTML(orderName(item))}${typeof item !== 'string' && item.label ? `<small>${escapeHTML(item.phrase)}</small>` : ''}</span><div class="actions"><button class="text-button" data-order-up="${i}" aria-label="Move item ${i + 1} up" ${i === 0 ? 'disabled' : ''}>Up</button><button class="text-button" data-order-down="${i}" aria-label="Move item ${i + 1} down" ${i === items.length - 1 ? 'disabled' : ''}>Down</button></div></li>`).join('') || '<li class="empty-state">No options to reorder.</li>';
+  $('orderList').innerHTML = items.map((item, i) => `<li class="order-row" draggable="true" data-order-index="${i}"><span class="order-grip" aria-hidden="true"><svg width="20" height="24" viewBox="0 0 20 24" fill="currentColor"><circle cx="6" cy="6" r="1.5"/><circle cx="14" cy="6" r="1.5"/><circle cx="6" cy="12" r="1.5"/><circle cx="14" cy="12" r="1.5"/><circle cx="6" cy="18" r="1.5"/><circle cx="14" cy="18" r="1.5"/></svg></span><span class="order-name">${escapeHTML(orderName(item))}</span><div class="actions"><button class="text-button" data-order-up="${i}" aria-label="Move item ${i + 1} up" ${i === 0 ? 'disabled' : ''}>Up</button><button class="text-button" data-order-down="${i}" aria-label="Move item ${i + 1} down" ${i === items.length - 1 ? 'disabled' : ''}>Down</button></div></li>`).join('') || '<li class="empty-state">No options to reorder.</li>';
   for (const [selector, key, offset] of [['[data-order-up]', 'orderUp', -1], ['[data-order-down]', 'orderDown', 1]]) {
     $('orderList').querySelectorAll(selector).forEach(button => { button.onclick = () => {
       const from = Number(button.dataset[key]);

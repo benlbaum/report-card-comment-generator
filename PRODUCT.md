@@ -39,7 +39,7 @@ Original student and phrase content is preserved in src/data.json. The previous 
 
 ## Configurable topics and pronouns
 
-Teachers can add, remove, reorder, and configure topics as Selection or Value Entry, with labeled phrase choices or optional number/text values linked to a phrase. Fluency is a configurable value topic, not required student metadata. Student values and pronouns, including custom X/Y pronouns, remain local to each teacher's class work; roster exports include pronouns but exclude values and bank settings. Class overview shows full wrapped comments and a dark Export comments action, without bulk draft generation.
+Teachers can add, remove, reorder, and configure topics as Selection or Value Entry, with phrase choices or optional number/text values linked to a phrase. Fluency is a configurable value topic, not required student metadata. Student values and pronouns, including custom X/Y pronouns, remain local to each teacher's class work; roster exports include pronouns but exclude values and bank settings. Class overview shows full wrapped comments and a dark Export comments action, without bulk draft generation.
 
 Teachers can export/import bank-only files to reuse definitions and ordering across classes and semesters without transferring student records or comments. Imports may add new topics or replace the bank, remain staged until saving, and support Undo. A Change order window supports dragging topics and phrase options, with keyboard Up/Down alternatives.
 

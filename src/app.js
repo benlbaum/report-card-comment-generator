@@ -24,9 +24,8 @@ let pendingImport = null;
 let pendingRosterImport = null;
 let pendingBankImport = null;
 let bankImportFilename = '';
-let orderDraft = null;
-let draggedOrderIndex = null;
-let phraseDrag = null;
+let bankEditing = false;
+let bankDrag = null;
 const reorderGrip = '<svg aria-hidden="true" width="20" height="24" viewBox="0 0 20 24" fill="currentColor"><circle cx="6" cy="6" r="1.5"/><circle cx="14" cy="6" r="1.5"/><circle cx="6" cy="12" r="1.5"/><circle cx="14" cy="12" r="1.5"/><circle cx="6" cy="18" r="1.5"/><circle cx="14" cy="18" r="1.5"/></svg>';
 const current = () => state.students.find(s => s.id === currentId);
 const displayName = s => s.fullName || 'New student';
@@ -396,11 +395,11 @@ function fitPhraseBox(textarea) {
   const border = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
   textarea.style.height = Math.ceil(textarea.scrollHeight + border) + 'px';
 }
-function clearPhraseDrag() {
-  const drag = phraseDrag;
-  phraseDrag = null;
+function clearBankDrag() {
+  const drag = bankDrag;
+  bankDrag = null;
   if (drag?.handle.hasPointerCapture?.(drag.pointerId)) drag.handle.releasePointerCapture(drag.pointerId);
-  $('phraseEditor').querySelectorAll('.phrase-edit-row').forEach(row => row.classList.remove('dragging', 'drop-before', 'drop-after'));
+  $('bankView').querySelectorAll('.phrase-edit-row, .bank-topic-row').forEach(row => row.classList.remove('dragging', 'drop-before', 'drop-after'));
 }
 function movePhrase(from, to) {
   const phrases = bankDraft.categories[bankCategory];
@@ -412,53 +411,93 @@ function movePhrase(from, to) {
   $('phraseEditor').querySelector(`[data-phrase-handle="${to}"]`).focus({preventScroll:true});
   $('phraseOrderAnnouncement').textContent = `Phrase moved to ${to + 1} of ${phrases.length}.`;
 }
-function bindPhraseHandles() {
-  $('phraseEditor').querySelectorAll('[data-phrase-handle]').forEach(handle => {
+function bindBankHandles(container, rowSelector, handleSelector, move) {
+  container.querySelectorAll(handleSelector).forEach(handle => {
     handle.onkeydown = event => {
-      if (event.key === 'Escape') { clearPhraseDrag(); return; }
+      if (event.key === 'Escape') { clearBankDrag(); return; }
       if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
       event.preventDefault();
-      clearPhraseDrag();
-      const from = Number(handle.dataset.phraseHandle);
-      movePhrase(from, from + (event.key === 'ArrowUp' ? -1 : 1));
+      clearBankDrag();
+      const from = Number(handle.dataset.reorderIndex);
+      move(from, from + (event.key === 'ArrowUp' ? -1 : 1));
     };
     handle.onpointerdown = event => {
       if (event.button !== 0 || !event.isPrimary) return;
       event.preventDefault();
-      clearPhraseDrag();
+      clearBankDrag();
       handle.focus({preventScroll:true});
-      const from = Number(handle.dataset.phraseHandle);
-      phraseDrag = {from, to:from, pointerId:event.pointerId, handle};
+      const from = Number(handle.dataset.reorderIndex);
+      bankDrag = {from, to:from, pointerId:event.pointerId, handle};
       handle.setPointerCapture?.(event.pointerId);
-      handle.closest('.phrase-edit-row').classList.add('dragging');
+      handle.closest(rowSelector).classList.add('dragging');
     };
     handle.onpointermove = event => {
-      if (!phraseDrag || event.pointerId !== phraseDrag.pointerId) return;
-      const rows = [...$('phraseEditor').querySelectorAll('.phrase-edit-row')];
+      if (!bankDrag || event.pointerId !== bankDrag.pointerId) return;
+      const rows = [...container.querySelectorAll(rowSelector)];
       rows.forEach(row => row.classList.remove('drop-before', 'drop-after'));
       let target = rows.findIndex(row => event.clientY < row.getBoundingClientRect().bottom);
       if (target < 0) target = rows.length - 1;
       const rect = rows[target].getBoundingClientRect();
       const after = event.clientY >= rect.top + rect.height / 2;
       let to = target + (after ? 1 : 0);
-      if (phraseDrag.from < to) to--;
-      phraseDrag.to = to;
-      if (to !== phraseDrag.from) rows[target].classList.add(after ? 'drop-after' : 'drop-before');
+      if (bankDrag.from < to) to--;
+      bankDrag.to = to;
+      if (to !== bankDrag.from) rows[target].classList.add(after ? 'drop-after' : 'drop-before');
       if (event.clientY < 60) window.scrollBy(0, -12);
       else if (event.clientY > window.innerHeight - 60) window.scrollBy(0, 12);
     };
     handle.onpointerup = event => {
-      if (!phraseDrag || event.pointerId !== phraseDrag.pointerId) return;
-      const {from, to} = phraseDrag;
-      clearPhraseDrag();
-      movePhrase(from, to);
+      if (!bankDrag || event.pointerId !== bankDrag.pointerId) return;
+      const {from, to} = bankDrag;
+      clearBankDrag();
+      move(from, to);
     };
-    handle.onpointercancel = handle.onlostpointercapture = clearPhraseDrag;
+    handle.onpointercancel = handle.onlostpointercapture = clearBankDrag;
   });
 }
+function topicDetails(cat) {
+  const config = bankDraft.topicSettings[cat];
+  if (config.type !== 'value') {
+    const count = bankDraft.categories[cat].length;
+    return `${count} ${count === 1 ? 'option' : 'options'}`;
+  }
+  const parts = [config.valueType === 'text' ? 'Text' : 'Number', config.unit];
+  if (config.valueType === 'number') {
+    if (config.min !== '' && config.max !== '') parts.push(`${config.min}–${config.max}`);
+    else if (config.min !== '') parts.push(`Min ${config.min}`);
+    else if (config.max !== '') parts.push(`Max ${config.max}`);
+  }
+  return parts.filter(Boolean).join(' · ');
+}
+function renderBankList() {
+  $('bankTopicCount').textContent = bankDraft.categoryOrder.length;
+  $('bankTopicList').innerHTML = bankDraft.categoryOrder.map((cat, i) => `<li class="bank-topic-row"><button class="phrase-grip" data-topic-handle="${i}" data-reorder-index="${i}" aria-label="Reorder topic ${escapeHTML(cat)}" aria-describedby="topicOrderHelp" aria-keyshortcuts="ArrowUp ArrowDown" title="Drag to reorder; use Up/Down arrow keys" ${bankDraft.categoryOrder.length < 2 ? 'disabled' : ''}>${reorderGrip}</button><span class="bank-topic-name">${escapeHTML(cat)}</span><div class="bank-topic-meta"><span>${bankDraft.topicSettings[cat].type === 'value' ? 'Value Entry' : 'Selection'}</span><span>${escapeHTML(topicDetails(cat))}</span></div><button class="button" data-edit-topic="${i}" aria-label="Edit ${escapeHTML(cat)}">Edit</button></li>`).join('') || '<li class="empty-state">Add a topic to build your phrase bank.</li>';
+  $('bankTopicList').querySelectorAll('[data-edit-topic]').forEach(button => { button.onclick = () => {
+    bankCategory = bankDraft.categoryOrder[Number(button.dataset.editTopic)];
+    bankEditing = true;
+    renderBank();
+    $('bankView').scrollIntoView({block:'start'});
+    $('bankTopicName').focus({preventScroll:true});
+  }; });
+  bindBankHandles($('bankTopicList'), '.bank-topic-row', '[data-topic-handle]', moveBankTopic);
+}
+function moveBankTopic(from, to) {
+  const topics = bankDraft.categoryOrder;
+  if (from === to || from < 0 || to < 0 || from >= topics.length || to >= topics.length) return;
+  const [topic] = topics.splice(from, 1);
+  topics.splice(to, 0, topic);
+  bankDirty = true;
+  renderBank();
+  $('bankTopicList').querySelector(`[data-topic-handle="${to}"]`).focus({preventScroll:true});
+  $('topicOrderAnnouncement').textContent = `${topic} moved to ${to + 1} of ${topics.length}.`;
+}
 function renderBank() {
-  clearPhraseDrag();
+  clearBankDrag();
   if (!bankDraft.categoryOrder.includes(bankCategory)) bankCategory = bankDraft.categoryOrder[0];
+  if (!bankCategory) bankEditing = false;
+  $('bankIndex').hidden = bankEditing;
+  $('bankTopicEditor').hidden = !bankEditing;
+  renderBankList();
   $('bankTopic').innerHTML = bankDraft.categoryOrder.map(cat => `<option ${cat === bankCategory ? 'selected' : ''}>${escapeHTML(cat)}</option>`).join('');
   $('bankTopic').disabled = !bankCategory;
   $('bankCategoryName').textContent = bankCategory || 'No categories yet';
@@ -470,7 +509,6 @@ function renderBank() {
   $('bankTopicName').removeAttribute('aria-invalid');
   $('topicNameError').hidden = true;
   const index = bankDraft.categoryOrder.indexOf(bankCategory);
-  $('changeBankOrder').disabled = !bankDraft.categoryOrder.length;
   $('previousBankTopic').disabled = index <= 0;
   $('nextBankTopic').disabled = index < 0 || index === bankDraft.categoryOrder.length - 1;
   $('bankPosition').textContent = index < 0 ? '0 / 0' : `${index + 1} / ${bankDraft.categoryOrder.length}`;
@@ -487,8 +525,8 @@ function renderBank() {
   fitPhraseBox($('valuePhrase'));
   $('phraseEditor').hidden = config.type === 'value';
   $('addPhrase').hidden = config.type === 'value';
-  $('phraseEditor').innerHTML = phrases.length ? phrases.map((opt, i) => `<div class="phrase-edit-row"><button class="phrase-grip" data-phrase-handle="${i}" aria-label="Reorder phrase ${i + 1}" aria-describedby="phraseOrderHelp" aria-keyshortcuts="ArrowUp ArrowDown" title="Drag to reorder; use Up/Down arrow keys" ${phrases.length < 2 ? 'disabled' : ''}>${reorderGrip}</button><label class="visually-hidden" for="phrase-${i}">Option ${i + 1} phrase</label><textarea id="phrase-${i}" data-index="${i}" rows="1" maxlength="10000">${escapeHTML(opt.phrase)}</textarea><div class="option-actions"><button class="text-button danger" data-remove="${i}" aria-label="Remove option ${i + 1}">Remove</button></div></div>`).join('') : '<p class="empty-state">Add a phrase to this topic.</p>';
-  bindPhraseHandles();
+  $('phraseEditor').innerHTML = phrases.length ? phrases.map((opt, i) => `<div class="phrase-edit-row"><button class="phrase-grip" data-phrase-handle="${i}" data-reorder-index="${i}" aria-label="Reorder phrase ${i + 1}" aria-describedby="phraseOrderHelp" aria-keyshortcuts="ArrowUp ArrowDown" title="Drag to reorder; use Up/Down arrow keys" ${phrases.length < 2 ? 'disabled' : ''}>${reorderGrip}</button><label class="visually-hidden" for="phrase-${i}">Option ${i + 1} phrase</label><textarea id="phrase-${i}" data-index="${i}" rows="1" maxlength="10000">${escapeHTML(opt.phrase)}</textarea><div class="option-actions"><button class="text-button danger" data-remove="${i}" aria-label="Remove option ${i + 1}">Remove</button></div></div>`).join('') : '<p class="empty-state">Add a phrase to this topic.</p>';
+  bindBankHandles($('phraseEditor'), '.phrase-edit-row', '[data-phrase-handle]', movePhrase);
   $('phraseEditor').querySelectorAll('textarea').forEach(ta => {
     fitPhraseBox(ta);
     ta.oninput = () => {
@@ -518,63 +556,6 @@ function resetBankDraft() {
 function checkedBankDraft() {
   const categories = Object.fromEntries(bankDraft.categoryOrder.map(cat => [cat, bankDraft.categories[cat].filter(opt => opt.phrase.trim()).map(opt => ({phrase:opt.phrase.trim(), label:opt.label.trim()}))]));
   return Core.bankFile({categories, categoryOrder:bankDraft.categoryOrder, topicSettings:bankDraft.topicSettings});
-}
-function orderItems() {
-  return orderDraft.categoryOrder;
-}
-function orderName(item) { return typeof item === 'string' ? item : item.phrase || 'Empty phrase'; }
-function moveOrderItem(from, to) {
-  const items = orderItems();
-  if (from === to || from < 0 || to < 0 || from >= items.length || to >= items.length) return;
-  const [item] = items.splice(from, 1);
-  items.splice(to, 0, item);
-  $('applyOrder').disabled = JSON.stringify(orderDraft) === JSON.stringify(bankDraft);
-  $('orderAnnouncement').textContent = `${orderName(item)} moved to ${to + 1} of ${items.length}.`;
-  renderOrderList();
-}
-function clearOrderDrag() {
-  draggedOrderIndex = null;
-  $('orderList').querySelectorAll('.order-row').forEach(row => row.classList.remove('dragging', 'drop-before', 'drop-after'));
-}
-function renderOrderList() {
-  const items = orderItems();
-  $('orderList').innerHTML = items.map((item, i) => `<li class="order-row" draggable="true" data-order-index="${i}"><span class="order-grip" aria-hidden="true"><svg width="20" height="24" viewBox="0 0 20 24" fill="currentColor"><circle cx="6" cy="6" r="1.5"/><circle cx="14" cy="6" r="1.5"/><circle cx="6" cy="12" r="1.5"/><circle cx="14" cy="12" r="1.5"/><circle cx="6" cy="18" r="1.5"/><circle cx="14" cy="18" r="1.5"/></svg></span><span class="order-name">${escapeHTML(orderName(item))}</span><div class="actions"><button class="text-button" data-order-up="${i}" aria-label="Move item ${i + 1} up" ${i === 0 ? 'disabled' : ''}>Up</button><button class="text-button" data-order-down="${i}" aria-label="Move item ${i + 1} down" ${i === items.length - 1 ? 'disabled' : ''}>Down</button></div></li>`).join('') || '<li class="empty-state">No options to reorder.</li>';
-  for (const [selector, key, offset] of [['[data-order-up]', 'orderUp', -1], ['[data-order-down]', 'orderDown', 1]]) {
-    $('orderList').querySelectorAll(selector).forEach(button => { button.onclick = () => {
-      const from = Number(button.dataset[key]);
-      moveOrderItem(from, from + offset);
-      const next = $('orderList').querySelector(`[${offset < 0 ? 'data-order-up' : 'data-order-down'}="${from + offset}"]`);
-      (next.disabled ? next.parentElement.querySelector('button:not(:disabled)') : next)?.focus({preventScroll:true});
-    }; });
-  }
-  $('orderList').querySelectorAll('.order-row').forEach(row => {
-    row.ondragstart = event => {
-      draggedOrderIndex = Number(row.dataset.orderIndex);
-      if (event.dataTransfer) { event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', String(draggedOrderIndex)); }
-      row.classList.add('dragging');
-    };
-    row.ondragover = event => {
-      if (draggedOrderIndex == null) return;
-      event.preventDefault();
-      if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
-      $('orderList').querySelectorAll('.order-row').forEach(item => item.classList.remove('drop-before', 'drop-after'));
-      const rect = row.getBoundingClientRect();
-      row.classList.add(event.clientY >= rect.top + rect.height / 2 ? 'drop-after' : 'drop-before');
-    };
-    row.ondrop = event => {
-      if (draggedOrderIndex == null) return;
-      event.preventDefault();
-      const from = draggedOrderIndex;
-      const target = Number(row.dataset.orderIndex);
-      const rect = row.getBoundingClientRect();
-      const after = event.clientY >= rect.top + rect.height / 2;
-      let to = target + (after ? 1 : 0);
-      if (from < to) to--;
-      clearOrderDrag();
-      moveOrderItem(from, to);
-    };
-    row.ondragend = clearOrderDrag;
-  });
 }
 function showBankImport(payload, filename) {
   pendingBankImport = payload;
@@ -726,7 +707,16 @@ async function applyImport(rosterOnly) {
   setView(view);
 }
 
-document.querySelectorAll('[data-view]').forEach(button => { button.onclick = () => setView(button.dataset.view); });
+document.querySelectorAll('[data-view]').forEach(button => { button.onclick = () => {
+  if (button.dataset.view === 'bank') bankEditing = false;
+  setView(button.dataset.view);
+}; });
+$('backToBankList').onclick = () => {
+  if (!$('bankTopicName').reportValidity()) { $('bankTopicName').focus(); return; }
+  bankEditing = false;
+  renderBank();
+  $('bankTopicList').querySelector(`[data-edit-topic="${bankDraft.categoryOrder.indexOf(bankCategory)}"]`)?.focus();
+};
 $('studentSelect').onchange = event => { currentId = event.target.value; renderWrite(); };
 $('prevStudent').onclick = () => moveStudent(-1);
 $('nextStudent').onclick = () => moveStudent(1);
@@ -828,25 +818,6 @@ $('undoNotice').addEventListener('focusin', () => clearTimeout(undoTimer));
 $('undoNotice').addEventListener('focusout', event => {
   if (!$('undoNotice').contains(event.relatedTarget)) scheduleUndoNotice();
 });
-$('changeBankOrder').onclick = () => {
-  orderDraft = clone(bankDraft);
-  draggedOrderIndex = null;
-  $('applyOrder').disabled = true;
-  $('orderAnnouncement').textContent = '';
-  renderOrderList();
-  $('orderDialog').showModal();
-  $('cancelOrder').focus();
-};
-$('cancelOrder').onclick = () => $('orderDialog').close();
-$('orderDialog').onclose = () => { orderDraft = null; draggedOrderIndex = null; };
-$('applyOrder').onclick = () => {
-  if (!orderDraft) return;
-  bankDraft = orderDraft;
-  bankDirty = true;
-  $('orderDialog').close();
-  renderBank();
-  $('changeBankOrder').focus();
-};
 for (const [id, offset] of [['previousBankTopic', -1], ['nextBankTopic', 1]]) $(id).onclick = () => {
   const next = bankDraft.categoryOrder[bankDraft.categoryOrder.indexOf(bankCategory) + offset];
   if (!next) return;
@@ -919,6 +890,7 @@ $('categoryForm').onsubmit = event => {
   bankDraft.topicSettings[name] = { ...Core.bank({ [name]: [] }, [name]).topicSettings[name], type: 'selection' };
   bankDraft.topicOrigins[name] = null;
   bankCategory = name;
+  bankEditing = true;
   bankDirty = true;
   $('categoryDialog').close();
   renderBank();
@@ -939,6 +911,7 @@ $('removeCategory').onclick = async () => {
   delete bankDraft.topicSettings[bankCategory];
   delete bankDraft.topicOrigins[bankCategory];
   bankDraft.categoryOrder = bankDraft.categoryOrder.filter(c => c !== bankCategory);
+  bankEditing = false;
   bankDirty = true;
   renderBank();
 };

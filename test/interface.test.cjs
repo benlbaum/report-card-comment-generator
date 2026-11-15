@@ -32,6 +32,80 @@ function setup(t, stored) {
   return { window: dom.window, document: dom.window.document, $, change, saved, tab, choose, choice };
 }
 
+function editBankTopic(document, name = document.getElementById('bankTopic').value) {
+  const index = [...document.getElementById('bankTopic').options].findIndex(option => option.value === name);
+  document.querySelector(`[data-edit-topic="${index}"]`).click();
+}
+test('phrase bank opens to a topic list and Edit drills into settings while All topics retains pending work', t => {
+  const ui = setup(t);
+  ui.document.querySelector('[data-view="bank"]').click();
+  assert.equal(ui.$('bankIndex').hidden, false);
+  assert.equal(ui.$('bankTopicEditor').hidden, true);
+  assert.equal(ui.$('bankTopicCount').textContent, '16');
+  assert.match(ui.$('bankTopicList').children[0].textContent, /BeginningSelection5 optionsEdit/);
+  const fluency = [...ui.$('bankTopicList').children].find(row=>row.querySelector('.bank-topic-name').textContent==='Fluency');
+  assert.match(fluency.textContent, /Value EntryNumber · % · 0–100/);
+  fluency.querySelector('[data-edit-topic]').click();
+  assert.equal(ui.$('bankIndex').hidden, true);
+  assert.equal(ui.$('bankTopicEditor').hidden, false);
+  assert.equal(ui.$('bankTopicName').value, 'Fluency');
+  ui.change('bankTopicName', 'Reading rate', 'input');
+  ui.change('valueUnit', 'words/min', 'input');
+  ui.change('valueMax', '200', 'input');
+  ui.$('backToBankList').click();
+  const renamed = [...ui.$('bankTopicList').children].find(row=>row.querySelector('.bank-topic-name').textContent==='Reading rate');
+  assert.match(renamed.textContent, /Value EntryNumber · words\/min · 0–200/);
+  assert.equal(ui.saved().categoryOrder.includes('Reading rate'), false);
+  renamed.querySelector('[data-edit-topic]').click();
+  assert.equal(ui.$('valueUnit').value, 'words/min');
+  assert.equal(ui.$('valueMax').value, '200');
+  ui.$('backToBankList').click();
+  ui.$('saveBank').click();
+  const reload = setup(t, ui.saved());
+  reload.document.querySelector('[data-view="bank"]').click();
+  assert.equal(reload.$('bankIndex').hidden, false);
+  assert.match(reload.$('bankTopicList').textContent, /Reading rate/);
+});
+test('topic list shows pending option counts and prevents leaving an invalid topic name', t => {
+  const ui = setup(t);
+  ui.document.querySelector('[data-view="bank"]').click();
+  editBankTopic(ui.document, 'Beginning');
+  ui.$('addPhrase').click();
+  ui.change('phrase-5', 'One more phrase.', 'input');
+  ui.change('bankTopicName', '', 'input');
+  ui.$('backToBankList').click();
+  assert.equal(ui.$('bankTopicEditor').hidden, false);
+  assert.equal(ui.document.activeElement.id, 'bankTopicName');
+  assert.equal(ui.$('topicNameError').hidden, false);
+  ui.change('bankTopicName', 'Beginning', 'input');
+  ui.$('backToBankList').click();
+  assert.equal(ui.$('bankIndex').hidden, false);
+  assert.match(ui.$('bankTopicList').children[0].textContent, /6 options/);
+  editBankTopic(ui.document, 'Beginning');
+  assert.equal(ui.$('phrase-5').value, 'One more phrase.');
+  ui.document.querySelector('[data-view="write"]').click();
+  ui.document.querySelector('[data-view="bank"]').click();
+  assert.equal(ui.$('bankIndex').hidden, false, 'the main navigation returns to the list');
+});
+test('an empty bank can add, edit, reorder and remove its only topic through the list', async t => {
+  const state = {...Core.validate(original), categories:{},categoryOrder:[],topicSettings:{}};
+  const ui = setup(t, state);
+  ui.document.querySelector('[data-view="bank"]').click();
+  assert.equal(ui.$('bankIndex').hidden, false);
+  assert.match(ui.$('bankTopicList').textContent, /Add a topic/);
+  addTopic(ui, 'New topic', 'selection');
+  assert.equal(ui.$('bankTopicEditor').hidden, false);
+  ui.$('backToBankList').click();
+  assert.equal(ui.$('bankTopicList').children.length, 1);
+  assert.equal(ui.document.querySelector('[data-topic-handle]').disabled, true);
+  editBankTopic(ui.document, 'New topic');
+  ui.$('removeCategory').click();
+  ui.$('acceptConfirm').click();
+  await tick();
+  assert.equal(ui.$('bankIndex').hidden, false);
+  assert.equal(ui.$('bankTopicCount').textContent, '0');
+  assert.match(ui.$('bankTopicList').textContent, /Add a topic/);
+});
 test('navigation uses one topic dropdown and compact selectors in secondary views', t => {
   const { $, document } = setup(t);
   assert.equal($('categoryTabs'), null);
@@ -45,6 +119,10 @@ test('navigation uses one topic dropdown and compact selectors in secondary view
   assert.equal($('overviewTopic').options.length, 17);
   assert.equal($('overviewTabs'), null);
   document.querySelector('[data-view="bank"]').click();
+  assert.equal($('bankIndex').hidden, false);
+  assert.equal($('bankTopicEditor').hidden, true);
+  assert.equal($('bankTopicList').children.length, 16);
+  editBankTopic(document);
   assert.equal($('bankView').hidden, false);
   assert.equal($('overviewView').hidden, true);
   assert.equal($('bankTopic').options.length, 16);
@@ -119,6 +197,7 @@ test('student search boxes are absent while comment progress filtering persists 
   document.querySelector('[data-view="roster"]').click();
   assert.equal($('rosterList').querySelectorAll('tbody tr').length, 4);
   document.querySelector('[data-view="bank"]').click();
+  editBankTopic(document);
   assert.equal($('rosterView').hidden, true);
   document.querySelector('[data-view="overview"]').click();
   assert.equal($('filterStatus').value, 'Draft');
@@ -199,6 +278,7 @@ test('adding a student opens a blank editable row without losing existing commen
 test('bank Previous/Next navigation retains unsaved edits and follows the current topic order', t => {
   const {$, document, change, saved} = setup(t);
   document.querySelector('[data-view="bank"]').click();
+  editBankTopic(document);
   const originalPhrase = saved().categories.Beginning[0].phrase;
   change('phrase-0', 'An unsaved phrase edit.', 'input');
   assert.equal($('bankPosition').textContent, '1 / 16');
@@ -209,9 +289,9 @@ test('bank Previous/Next navigation retains unsaved edits and follows the curren
   $('previousBankTopic').click();
   assert.equal($('phrase-0').value, 'An unsaved phrase edit.');
   assert.equal(saved().categories.Beginning[0].phrase, originalPhrase);
-  $('changeBankOrder').click();
-  document.querySelector('[data-order-down="0"]').click();
-  $('applyOrder').click();
+  $('backToBankList').click();
+  document.querySelector('[data-topic-handle="0"]').dispatchEvent(new document.defaultView.KeyboardEvent('keydown', {key:'ArrowDown',bubbles:true}));
+  editBankTopic(document, 'Beginning');
   assert.equal($('bankPosition').textContent, '2 / 16');
   $('previousBankTopic').click();
   assert.equal($('bankTopic').value, original.categoryOrder[1]);
@@ -337,6 +417,7 @@ test('bank edits are staged, saved selections follow edited phrases, final text 
   choose('0');
   change('finalText', 'A final comment to keep.', 'input');
   document.querySelector('[data-view="bank"]').click();
+  editBankTopic(document);
   change('phrase-0', '[FullName] has made steady progress.', 'input');
   assert.notEqual(saved().categories.Beginning[0].phrase, '[FullName] has made steady progress.');
   $('saveBank').click();
@@ -350,6 +431,7 @@ test('bank edits are staged, saved selections follow edited phrases, final text 
 test('cancelling phrase bank changes does not mutate the saved bank', async t => {
   const { $, document, change, saved } = setup(t);
   document.querySelector('[data-view="bank"]').click();
+  editBankTopic(document);
   const before = saved().categories.Beginning[0].phrase;
   change('phrase-0', 'Temporary edit', 'input');
   $('discardBank').click();
@@ -453,14 +535,14 @@ test('teachers configure optional value topics, reorder them, and retain separat
   const {$, change, document, saved} = ui;
   change('finalText', 'Keep my finished comment.', 'input');
   document.querySelector('[data-view="bank"]').click();
+  editBankTopic(document);
   addTopic(ui, 'Reading rate', 'value');
   change('valueUnit', 'words/min', 'input');
   change('valueMin', '0', 'input');
   change('valueMax', '500', 'input');
   change('valuePhrase', '[HeShe] reads [Value] words per minute.', 'input');
-  $('changeBankOrder').click();
-  document.querySelector('[data-order-up="16"]').click();
-  $('applyOrder').click();
+  $('backToBankList').click();
+  document.querySelector('[data-topic-handle="16"]').dispatchEvent(new ui.window.KeyboardEvent('keydown', {key:'ArrowUp',bubbles:true}));
   $('saveBank').click();
   assert.equal(saved().categoryOrder.at(-2), 'Reading rate');
   document.querySelector('[data-view="write"]').click();
@@ -483,6 +565,7 @@ test('phrase boxes use a single editable field and retain selections after reord
   const ui = setup(t);
   const {$, change, document, saved} = ui;
   document.querySelector('[data-view="bank"]').click();
+  editBankTopic(document);
   addTopic(ui, 'Effort', 'selection');
   assert.equal($('phraseEditor').querySelector('input'), null);
   change('phrase-0', '[PrefName] puts care into each task.', 'input');
@@ -496,6 +579,7 @@ test('phrase boxes use a single editable field and retain selections after reord
   assert.match($('draftBox').textContent, /Addy is building persistence/);
   assert.equal(saved().categories.Effort[0].phrase, '[PrefName] is building persistence.');
   document.querySelector('[data-view="bank"]').click();
+  editBankTopic(document);
   document.querySelector('[data-phrase-handle="0"]').dispatchEvent(new ui.window.KeyboardEvent('keydown', {key:'ArrowDown', bubbles:true}));
   document.querySelector('[data-remove="0"]').click();
   $('saveBank').click();
@@ -506,6 +590,7 @@ test('phrase bank keeps topic settings visible without a collapse control and va
   const ui = setup(t);
   const {$, document, change} = ui;
   document.querySelector('[data-view="bank"]').click();
+  editBankTopic(document);
   assert.equal($('bankTopicSettings').tagName, 'SECTION');
   assert.equal($('bankTopicSettings').hidden, false);
   assert.equal($('bankTopicSettings').querySelector('summary'), null);
@@ -530,6 +615,7 @@ test('removing a value topic clears draft entries and Undo restores scores, sett
   change('topicValue', '75', 'input');
   change('finalText', 'Keep this final.', 'input');
   document.querySelector('[data-view="bank"]').click();
+  editBankTopic(document);
   change('bankTopic', 'Fluency');
   $('removeCategory').click();
   $('acceptConfirm').click();
@@ -571,6 +657,7 @@ test('preset and custom pronouns personalize values, validate X/Y, and survive r
 });
 async function importBankFile(ui, payload) {
   ui.document.querySelector('[data-view="bank"]').click();
+  editBankTopic(ui.document);
   Object.defineProperty(ui.$('bankFile'), 'files', {configurable:true, value:[{name:'Semester bank.json',size:100,text:async()=>typeof payload === 'string' ? payload : JSON.stringify(payload)}]});
   ui.$('bankFile').dispatchEvent(new ui.window.Event('change'));
   await tick();
@@ -602,6 +689,7 @@ test('adding bank topics keeps existing and unsaved definitions and their origin
   const ui = setup(t);
   ui.choose('0');
   ui.document.querySelector('[data-view="bank"]').click();
+  editBankTopic(ui.document);
   ui.change('phrase-0', '[PrefName] continues to make progress.', 'input');
   const payload = {version:2,kind:'phrase-bank',categories:{beginning:[{phrase:'A different phrase.'}], Project:[]},categoryOrder:['beginning','Project'],topicSettings:{Project:{type:'value',valueType:'text',phrase:'[PrefName] completed [Value].'}}};
   await importBankFile(ui, payload);
@@ -617,6 +705,7 @@ test('adding bank topics keeps existing and unsaved definitions and their origin
 test('invalid bank files and cancelled replacement leave saved and pending edits intact', async t => {
   const ui = setup(t);
   ui.document.querySelector('[data-view="bank"]').click();
+  editBankTopic(ui.document);
   ui.change('phrase-0', 'Pending work to keep.', 'input');
   const before = ui.saved();
   await importBankFile(ui, '{bad json');
@@ -633,18 +722,6 @@ test('invalid bank files and cancelled replacement leave saved and pending edits
   ui.$('cancelBankImport').click();
   assert.equal(ui.$('bankImportPreview').hidden, true);
 });
-function dragOrder(ui, from, target, clientY) {
-  const transfer = {setData(){}, effectAllowed:'', dropEffect:''};
-  const drag = (row, type) => {
-    const event = new ui.window.Event(type, {bubbles:true,cancelable:true});
-    Object.defineProperties(event,{dataTransfer:{value:transfer},clientY:{value:clientY}});
-    row.dispatchEvent(event);
-  };
-  const rows = ui.$('orderList').children;
-  drag(rows[from], 'dragstart');
-  drag(rows[target], 'dragover');
-  drag(rows[target], 'drop');
-}
 function phrasePointer(ui, handle, type, clientY, pointerId = 1) {
   const event = new ui.window.Event(type, {bubbles:true,cancelable:true});
   Object.defineProperties(event, {button:{value:0},isPrimary:{value:true},pointerId:{value:pointerId},clientY:{value:clientY}});
@@ -660,6 +737,7 @@ test('phrase handles drag directly in the bank, stage changes, and preserve sele
   ui.choose('0');
   const selected = ui.saved().students[0].selections.Beginning;
   ui.document.querySelector('[data-view="bank"]').click();
+  editBankTopic(ui.document);
   ui.change('phrase-1', '[PrefName] keeps trying.', 'input');
   measurePhraseRows(ui);
   const handle = ui.document.querySelector('[data-phrase-handle="0"]');
@@ -679,11 +757,13 @@ test('phrase handles drag directly in the bank, stage changes, and preserve sele
   assert.equal(saved.students[0].selections.Beginning, selected);
   const reload = setup(t, saved);
   reload.document.querySelector('[data-view="bank"]').click();
+  editBankTopic(reload.document);
   assert.equal(reload.$('phrase-2').value, selected);
 });
 test('cancelled phrase drags and boundary keys leave the bank unchanged', t => {
   const ui = setup(t);
   ui.document.querySelector('[data-view="bank"]').click();
+  editBankTopic(ui.document);
   const originalPhrase = ui.$('phrase-0').value;
   measurePhraseRows(ui);
   const handle = ui.document.querySelector('[data-phrase-handle="0"]');
@@ -704,16 +784,23 @@ test('dragging topics and phrase options changes only the pending order and reta
   ui.choose('0');
   const selected = ui.saved().students[0].selections.Beginning;
   ui.document.querySelector('[data-view="bank"]').click();
-  ui.$('changeBankOrder').click();
-  dragOrder(ui,0,1,1);
-  assert.match(ui.$('orderList').children[0].textContent, /Responsibility/);
-  ui.$('cancelOrder').click();
+  [...ui.$('bankTopicList').children].forEach((row, index) => {
+    row.getBoundingClientRect = () => ({top:100 + index * 60,bottom:144 + index * 60,height:44});
+  });
+  const handle = ui.document.querySelector('[data-topic-handle="0"]');
+  phrasePointer(ui, handle, 'pointerdown', 120);
+  phrasePointer(ui, handle, 'pointermove', 190);
+  phrasePointer(ui, handle, 'pointercancel', 190);
+  assert.match(ui.$('bankTopicList').children[0].textContent, /Beginning/);
   assert.equal(ui.$('bankPosition').textContent, '1 / 16');
-  ui.$('changeBankOrder').click();
+  assert.equal(ui.$('saveBank').disabled, true);
+  assert.equal(ui.$('orderDialog'), null);
   assert.equal(ui.$('orderScope'), null);
-  assert.equal(ui.$('orderHeading').textContent, 'Change topic order');
-  dragOrder(ui,0,1,1);
-  ui.$('applyOrder').click();
+  phrasePointer(ui, handle, 'pointerdown', 120);
+  phrasePointer(ui, handle, 'pointermove', 190);
+  phrasePointer(ui, handle, 'pointerup', 190);
+  assert.match(ui.$('bankTopicList').children[0].textContent, /Responsibility/);
+  editBankTopic(ui.document, 'Beginning');
   ui.document.querySelector('[data-phrase-handle="1"]').dispatchEvent(new ui.window.KeyboardEvent('keydown', {key:'ArrowUp',bubbles:true}));
   assert.equal(ui.saved().categoryOrder[0], 'Beginning');
   assert.equal(ui.$('bankPosition').textContent, '2 / 16');
@@ -721,6 +808,8 @@ test('dragging topics and phrase options changes only the pending order and reta
   assert.equal(ui.saved().categoryOrder[0], 'Responsibility');
   assert.equal(ui.saved().categories.Beginning[1].phrase, selected);
   assert.equal(ui.saved().students[0].selections.Beginning, selected);
+  ui.$('undoBtn').click();
+  assert.equal(ui.saved().categoryOrder[0], 'Beginning');
 });
 test('roster sorting supports first, last and preferred names while preserving work, selection, persistence and Undo', t => {
   const state = Core.validate(original);
@@ -789,6 +878,7 @@ test('sort notices dismiss after six seconds despite hover and resume dismissal 
 test('only Selection and Value Entry are offered, and configured units appear beside the entry and in its draft', t => {
   const ui = setup(t);
   ui.document.querySelector('[data-view="bank"]').click();
+  editBankTopic(ui.document);
   assert.deepEqual([...ui.$('topicType').options].map(o=>o.textContent), ['Selection','Value Entry']);
   assert.equal(ui.$('valueLabel'), null);
   ui.change('bankTopic', 'Fluency');
@@ -807,6 +897,7 @@ test('renaming a selection topic preserves choices, final text, order, active to
   ui.change('finalText', 'Keep the finished comment.', 'input');
   const selected = ui.saved().students[0].selections.Beginning;
   ui.document.querySelector('[data-view="bank"]').click();
+  editBankTopic(ui.document);
   ui.change('bankTopicName', 'Opening', 'input');
   ui.change('bankTopicName', 'Opening comments', 'input');
   assert.equal(ui.$('bankTopic').value, 'Opening comments');
@@ -830,6 +921,7 @@ test('renaming Fluency migrates legacy scores including zero and keeps generated
   stored.students[0].selections.Fluency = stored.categories.Fluency[1].phrase;
   const ui = setup(t, stored);
   ui.document.querySelector('[data-view="bank"]').click();
+  editBankTopic(ui.document);
   ui.change('bankTopic', 'Fluency');
   ui.change('bankTopicName', 'Math fluency', 'input');
   ui.$('saveBank').click();
@@ -848,6 +940,7 @@ test('renaming Fluency migrates legacy scores including zero and keeps generated
 test('topic names reject duplicates, blank and reserved names while allowing case-only renames', t => {
   const ui = setup(t);
   ui.document.querySelector('[data-view="bank"]').click();
+  editBankTopic(ui.document);
   for (const name of ['', 'responsibility', 'Final Comments', '__proto__']) {
     ui.change('bankTopicName', name, 'input');
     assert.equal(ui.$('topicNameError').hidden, false);
@@ -866,6 +959,7 @@ test('a renamed topic retains its student mapping when its exported definition i
   ui.choose('0');
   const phrase = ui.saved().students[0].selections.Beginning;
   ui.document.querySelector('[data-view="bank"]').click();
+  editBankTopic(ui.document);
   ui.change('bankTopicName', 'Opening', 'input');
   const exported = Core.exportBank({categories:{Opening:[{label:'Start',phrase}]},categoryOrder:['Opening'],topicSettings:{Opening:{type:'selection'}}});
   await importBankFile(ui, exported);

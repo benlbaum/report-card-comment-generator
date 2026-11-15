@@ -67,7 +67,15 @@
         <input id="bankFile" class="visually-hidden" type="file" accept=".json,application/json" aria-label="Choose a phrase bank file" tabindex="-1">
         <p id="bankFileError" class="inline-warning" role="alert" hidden></p>
         <section id="bankImportPreview" class="bank-import-preview" aria-label="Bank import preview" hidden></section>
-        <div class="bank-tools"><div class="bank-topic-nav"><div class="bank-topic field"><div class="topic-label"><label for="bankTopic">Topic</label><span id="bankPosition" class="muted"></span></div><select id="bankTopic"></select></div><button id="previousBankTopic" class="button" aria-label="Previous bank topic">Previous</button><button id="nextBankTopic" class="button" aria-label="Next bank topic">Next</button></div><button id="changeBankOrder" class="button">Change order</button></div>
+        <div id="bankIndex">
+          <div class="bank-list-columns" aria-hidden="true"><span></span><span>Topic <span id="bankTopicCount" class="muted"></span></span><span>Entry type</span><span>Options / value</span><span></span></div>
+          <ol id="bankTopicList" class="bank-topic-list" aria-label="Phrase bank topics"></ol>
+          <p id="topicOrderHelp" class="visually-hidden">Drag a topic handle to reorder. With the handle focused, use Up or Down arrow keys. Press Escape to cancel a drag. Save the bank to keep changes.</p>
+          <p id="topicOrderAnnouncement" class="visually-hidden" role="status"></p>
+        </div>
+        <div id="bankTopicEditor" hidden>
+        <button id="backToBankList" class="text-button bank-back">All topics</button>
+        <div class="bank-tools"><div class="bank-topic-nav"><div class="bank-topic field"><div class="topic-label"><label for="bankTopic">Topic</label><span id="bankPosition" class="muted"></span></div><select id="bankTopic"></select></div><button id="previousBankTopic" class="button" aria-label="Previous bank topic">Previous</button><button id="nextBankTopic" class="button" aria-label="Next bank topic">Next</button></div></div>
         <div id="bankPanel">
           <h3 id="bankCategoryName" class="visually-hidden"></h3>
           <section id="bankTopicSettings" class="bank-topic-settings" aria-labelledby="topicSettingsHeading"><h3 id="topicSettingsHeading" class="visually-hidden">Topic settings</h3>
@@ -86,6 +94,7 @@
           <p id="phraseOrderAnnouncement" class="visually-hidden" role="status"></p>
           <button id="addPhrase" class="button">Add phrase</button>
         </div>
+        </div>
         <div class="bank-save-bar"><span id="bankEditStatus" class="muted">No unsaved changes</span><div class="actions"><button id="discardBank" class="button" disabled>Discard changes</button><button id="saveBank" class="button primary" disabled>Save bank</button></div></div>
       </section>
     </main>
@@ -97,13 +106,6 @@
     <section class="share-section"><h3>Import</h3><p>Add a roster or restore a backup.</p><label class="file-label" for="importFile">Choose a roster or backup (.json)</label><input id="importFile" type="file" accept=".json,application/json"><p id="importError" class="inline-warning" role="alert" hidden></p><div id="importPreview" hidden></div></section>
   </dialog>
   <dialog id="confirmDialog" aria-labelledby="confirmHeading"><h2 id="confirmHeading"></h2><p id="confirmMessage"></p><div class="actions"><button id="cancelConfirm" class="button">Cancel</button><button id="acceptConfirm" class="button primary">Continue</button></div></dialog>
-  <dialog id="orderDialog" aria-labelledby="orderHeading">
-    <h2 id="orderHeading">Change topic order</h2>
-    <p class="helper">Drag topics or use Up/Down. Save the bank to keep changes.</p>
-    <ol id="orderList" class="order-list" aria-label="Reorder topics"></ol>
-    <p id="orderAnnouncement" class="visually-hidden" role="status"></p>
-    <div class="actions order-actions"><button id="cancelOrder" class="button">Cancel</button><button id="applyOrder" class="button primary" disabled>Apply order</button></div>
-  </dialog>
   <dialog id="categoryDialog" aria-labelledby="categoryDialogHeading"><form id="categoryForm"><h2 id="categoryDialogHeading">Add topic</h2><div class="field"><label for="newCategoryName">Topic name</label><input id="newCategoryName" maxlength="100" required placeholder="For example, Writing"></div><p id="categoryError" role="alert" class="inline-warning" hidden></p><div class="actions"><button type="button" id="cancelCategory" class="button">Cancel</button><button class="button primary">Add topic</button></div></form></dialog>
   <div id="toast" class="toast" role="status" hidden></div>
   <noscript>This app needs JavaScript enabled to build and save comments.</noscript>

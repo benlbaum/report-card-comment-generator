@@ -488,7 +488,10 @@ test('phrase boxes use a single editable field and retain selections after reord
   change('phrase-0', '[PrefName] puts care into each task.', 'input');
   $('addPhrase').click();
   change('phrase-1', '[PrefName] is building persistence.', 'input');
-  document.querySelector('[data-option-up="1"]').click();
+  $('changeBankOrder').click();
+  change('orderScope', 'options');
+  document.querySelector('[data-order-up="1"]').click();
+  $('applyOrder').click();
   $('saveBank').click();
   document.querySelector('[data-view="write"]').click();
   change('topicSelect', 'Effort');
@@ -496,11 +499,32 @@ test('phrase boxes use a single editable field and retain selections after reord
   assert.match($('draftBox').textContent, /Addy is building persistence/);
   assert.equal(saved().categories.Effort[0].phrase, '[PrefName] is building persistence.');
   document.querySelector('[data-view="bank"]').click();
-  document.querySelector('[data-option-down="0"]').click();
+  $('changeBankOrder').click();
+  change('orderScope', 'options');
+  document.querySelector('[data-order-down="0"]').click();
+  $('applyOrder').click();
   document.querySelector('[data-remove="0"]').click();
   $('saveBank').click();
   assert.equal(saved().students[0].selections.Effort, '[PrefName] is building persistence.');
   assert.equal(saved().categories.Effort.length, 1);
+});
+test('phrase bank keeps configuration in topic settings and value phrase editing outside the disclosure', t => {
+  const ui = setup(t);
+  const {$, document, change} = ui;
+  document.querySelector('[data-view="bank"]').click();
+  assert.equal($('bankTopicSettings').open, false);
+  for (const id of ['bankTopicName', 'topicType', 'removeCategory', 'valueUnit']) {
+    assert.equal($(id).closest('details'), $('bankTopicSettings'));
+  }
+  assert.equal($('phraseEditor').querySelector('[data-option-up], [data-option-down]'), null);
+  assert.equal($('phraseEditor').querySelectorAll('[data-remove]').length, 5);
+  change('bankTopic', 'Fluency');
+  assert.equal($('bankDefinitionHeading').textContent, 'Matching phrase');
+  assert.equal($('valuePhrase').closest('details'), null);
+  assert.equal($('valuePhrase').closest('.field').hidden, false);
+  change('valuePhrase', '[HeShe] achieved [Value].', 'input');
+  $('saveBank').click();
+  assert.equal(ui.saved().topicSettings.Fluency.phrase, '[HeShe] achieved [Value].');
 });
 test('removing a value topic clears draft entries and Undo restores scores, settings, and final work', async t => {
   const ui = setup(t);

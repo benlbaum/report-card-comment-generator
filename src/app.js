@@ -355,6 +355,7 @@ function openStudentEditor() {
 function updateBankStatus() {
   $('bankEditStatus').textContent = bankDirty ? 'Unsaved phrase changes' : 'No unsaved changes';
   const invalidName = !$('bankTopicName').validity.valid;
+  if (invalidName) $('bankTopicSettings').open = true;
   $('saveBank').disabled = !bankDirty || invalidName;
   $('exportBank').disabled = invalidName;
   $('discardBank').disabled = !bankDirty;
@@ -386,6 +387,7 @@ function renderBank() {
   if (!bankCategory) { updateBankStatus(); return; }
   const config = bankDraft.topicSettings[bankCategory];
   $('topicType').value = config.type;
+  $('bankDefinitionHeading').textContent = config.type === 'value' ? 'Matching phrase' : 'Phrases';
   const phrases = bankDraft.categories[bankCategory] || [];
   const usesValue = config.type === 'value' || phrases.some(opt => /\[(Score|Value|value)\]/.test(opt.phrase));
   $('valueSettings').hidden = !usesValue;
@@ -395,7 +397,7 @@ function renderBank() {
   fitPhraseBox($('valuePhrase'));
   $('phraseEditor').hidden = config.type === 'value';
   $('addPhrase').hidden = config.type === 'value';
-  $('phraseEditor').innerHTML = phrases.length ? phrases.map((opt, i) => `<div class="phrase-edit-row"><label class="visually-hidden" for="phrase-${i}">Option ${i + 1} phrase</label><textarea id="phrase-${i}" data-index="${i}" rows="1" maxlength="10000">${escapeHTML(opt.phrase)}</textarea><div class="option-actions"><button class="text-button" data-option-up="${i}" aria-label="Move option ${i + 1} up" ${i === 0 ? 'disabled' : ''}>Up</button><button class="text-button" data-option-down="${i}" aria-label="Move option ${i + 1} down" ${i === phrases.length - 1 ? 'disabled' : ''}>Down</button><button class="text-button danger" data-remove="${i}" aria-label="Remove option ${i + 1}">Remove</button></div></div>`).join('') : '<p class="empty-state">Add a phrase to this topic.</p>';
+  $('phraseEditor').innerHTML = phrases.length ? phrases.map((opt, i) => `<div class="phrase-edit-row"><label class="visually-hidden" for="phrase-${i}">Option ${i + 1} phrase</label><textarea id="phrase-${i}" data-index="${i}" rows="1" maxlength="10000">${escapeHTML(opt.phrase)}</textarea><div class="option-actions"><button class="text-button danger" data-remove="${i}" aria-label="Remove option ${i + 1}">Remove</button></div></div>`).join('') : '<p class="empty-state">Add a phrase to this topic.</p>';
   $('phraseEditor').querySelectorAll('textarea').forEach(ta => {
     fitPhraseBox(ta);
     ta.oninput = () => {
@@ -405,15 +407,6 @@ function renderBank() {
       updateBankStatus();
     };
   });
-  for (const [selector, key, offset] of [['[data-option-up]', 'optionUp', -1], ['[data-option-down]', 'optionDown', 1]]) {
-    $('phraseEditor').querySelectorAll(selector).forEach(button => { button.onclick = () => {
-      const i = Number(button.dataset[key]);
-      [phrases[i], phrases[i + offset]] = [phrases[i + offset], phrases[i]];
-      bankDirty = true;
-      renderBank();
-      $('phrase-' + (i + offset)).focus();
-    }; });
-  }
   $('phraseEditor').querySelectorAll('[data-remove]').forEach(button => { button.onclick = () => {
     bankDraft.categories[bankCategory].splice(Number(button.dataset.remove), 1);
     bankDirty = true;

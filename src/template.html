@@ -63,22 +63,24 @@
         <div id="rosterPanel" role="region" aria-label="Student roster" tabindex="0"><div id="rosterList"></div></div>
       </section>
       <section id="bankView" aria-labelledby="bankHeading" hidden>
-        <div class="page-heading"><h2 id="bankHeading">Phrase bank</h2><div class="actions"><button id="exportBank" class="button">Export bank</button><button id="importBank" class="button">Import bank</button><button id="addCategory" class="button">Add topic</button></div></div>
+        <div class="page-heading bank-heading"><h2 id="bankHeading">Phrase bank</h2><div class="actions"><button id="exportBank" class="text-button">Export bank</button><button id="importBank" class="text-button">Import bank</button><button id="addCategory" class="button">Add topic</button></div></div>
         <input id="bankFile" class="visually-hidden" type="file" accept=".json,application/json" aria-label="Choose a phrase bank file" tabindex="-1">
         <p id="bankFileError" class="inline-warning" role="alert" hidden></p>
         <section id="bankImportPreview" class="bank-import-preview" aria-label="Bank import preview" hidden></section>
-        <div class="bank-tools"><div class="bank-topic-nav"><div class="bank-topic field"><div class="topic-label"><label for="bankTopic">Topic</label><span id="bankPosition" class="muted"></span></div><select id="bankTopic"></select></div><button id="previousBankTopic" class="button" aria-label="Previous bank topic">Previous</button><button id="nextBankTopic" class="button" aria-label="Next bank topic">Next</button></div><div class="actions"><button id="changeBankOrder" class="button">Change order</button><button id="removeCategory" class="text-button danger">Remove topic</button></div></div>
+        <div class="bank-tools"><div class="bank-topic-nav"><div class="bank-topic field"><div class="topic-label"><label for="bankTopic">Topic</label><span id="bankPosition" class="muted"></span></div><select id="bankTopic"></select></div><button id="previousBankTopic" class="button" aria-label="Previous bank topic">Previous</button><button id="nextBankTopic" class="button" aria-label="Next bank topic">Next</button></div><button id="changeBankOrder" class="button">Change order</button></div>
         <div id="bankPanel">
           <h3 id="bankCategoryName" class="visually-hidden"></h3>
-          <div class="bank-config"><div class="field bank-name-field"><label for="bankTopicName">Topic name</label><input id="bankTopicName" maxlength="100" autocomplete="off" aria-describedby="topicNameError"><p id="topicNameError" class="inline-warning" role="alert" hidden></p></div><div class="field"><label for="topicType">Entry type</label><select id="topicType"><option value="selection">Selection</option><option value="value">Value Entry</option></select></div></div>
+          <details id="bankTopicSettings" class="bank-topic-settings"><summary>Topic settings</summary>
+          <div class="bank-config"><div class="field bank-name-field"><label for="bankTopicName">Topic name</label><input id="bankTopicName" maxlength="100" autocomplete="off" aria-describedby="topicNameError"><p id="topicNameError" class="inline-warning" role="alert" hidden></p></div><div class="field bank-type-field"><label for="topicType">Entry type</label><select id="topicType"><option value="selection">Selection</option><option value="value">Value Entry</option></select></div><button id="removeCategory" class="text-button danger">Remove topic</button></div>
           <div id="valueSettings" class="value-settings" hidden>
             <div class="field"><label for="valueType">Value type</label><select id="valueType"><option value="number">Number</option><option value="text">Text</option></select></div>
             <div class="field"><label for="valueUnit">Unit</label><input id="valueUnit" maxlength="30" placeholder="%, words/min…"></div>
             <div class="field number-setting"><label for="valueMin">Minimum</label><input id="valueMin" type="number" step="any" placeholder="None"></div>
             <div class="field number-setting"><label for="valueMax">Maximum</label><input id="valueMax" type="number" step="any" placeholder="None"></div>
-            <div class="field value-template"><label for="valuePhrase">Matching phrase</label><textarea id="valuePhrase" rows="1" maxlength="10000" placeholder="[HeShe] has a Fluency score of [Value]%."></textarea><p class="helper">Use [Value] where the entry belongs. Leave a student's entry blank to skip it.</p></div>
           </div>
-          <details class="token-help"><summary>Phrase tokens</summary><p class="helper tokens"><code>[FullName]</code> <code>[PrefName]</code> <code>[HeShe]</code> <code>[HeSheThey]</code> <code>[HisHerTheir]</code> <code>[HimHerThem]</code> <code>[Value]</code> <span>[Score] also works in older phrases.</span></p></details>
+          </details>
+          <div class="bank-definition-heading"><h3 id="bankDefinitionHeading">Phrases</h3><details class="token-help"><summary>Phrase tokens</summary><p class="helper tokens"><code>[FullName]</code> <code>[PrefName]</code> <code>[HeShe]</code> <code>[HeSheThey]</code> <code>[HisHerTheir]</code> <code>[HimHerThem]</code> <code>[Value]</code> <span>[Score] also works in older phrases.</span></p></details></div>
+          <div class="field value-template"><label for="valuePhrase" class="visually-hidden">Matching phrase</label><textarea id="valuePhrase" rows="1" maxlength="10000" placeholder="[HeShe] has a Fluency score of [Value]%."></textarea><p class="helper">Use [Value] where the entry belongs. Leave a student's entry blank to skip it.</p></div>
           <div id="phraseEditor"></div>
           <button id="addPhrase" class="button">Add phrase</button>
         </div>

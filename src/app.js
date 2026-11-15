@@ -260,9 +260,8 @@ function renderOverview() {
   const names = ['Final comments', ...state.categoryOrder];
   if (!names.includes(overviewCategory)) overviewCategory = names[0];
   $('overviewTopic').innerHTML = names.map(name => `<option ${name === overviewCategory ? 'selected' : ''}>${escapeHTML(name)}</option>`).join('');
-  const search = $('searchStudents').value.toLowerCase().trim();
   const status = $('filterStatus').value;
-  const students = state.students.filter(s => `${s.fullName} ${s.prefName}`.toLowerCase().includes(search) && (!status || s.status === status));
+  const students = state.students.filter(s => !status || s.status === status);
   $('overviewList').innerHTML = students.length ? students.map(s => {
     const category = overviewCategory === 'Final comments' ? null : overviewCategory;
     const selection = category ? s.selections[category] : '';
@@ -271,7 +270,7 @@ function renderOverview() {
     return `<article class="student-row ${category ? 'topic-row' : ''}" data-student="${escapeHTML(s.id)}"><h3><button class="student-name" data-open="${escapeHTML(s.id)}" title="${escapeHTML(displayName(s))}" aria-label="Open comment for ${escapeHTML(displayName(s))}">${escapeHTML(displayName(s))}</button></h3><span class="status ${s.status === 'Done' ? 'done' : s.status === 'Draft' ? 'draft' : ''}">${s.status}</span>
       <div class="row-comment">${category ? config.type === 'value' ? `<label class="visually-hidden" for="overview-value-${escapeHTML(s.id)}">${escapeHTML(valueLabel(category, config))} for ${escapeHTML(displayName(s))}</label>${valueInput(s, category, 'overview-value-' + s.id, `data-overview-value="${escapeHTML(s.id)}"`)}` : `<label class="visually-hidden" for="overview-choice-${escapeHTML(s.id)}">${escapeHTML(category)} phrase for ${escapeHTML(displayName(s))}</label><select id="overview-choice-${escapeHTML(s.id)}" data-choice="${escapeHTML(s.id)}">${phraseOptions(category, selection)}</select>` : `<p class="${comment ? '' : 'muted'}" title="${escapeHTML(comment || 'No final comment yet.')}">${escapeHTML(comment || 'No final comment yet.')}</p>`}</div>
       </article>`;
-  }).join('') : '<p class="empty-state">No students match. Try another name or progress filter.</p>';
+  }).join('') : `<p class="empty-state">${state.students.length ? 'No students match this progress filter.' : 'No students yet.'}</p>`;
   $('overviewList').querySelectorAll('[data-open]').forEach(button => { button.onclick = () => {
     currentId = button.dataset.open;
     if (overviewCategory !== 'Final comments') activeCategory = overviewCategory;
@@ -308,7 +307,7 @@ function renderStudentEditor(students) {
       return `<td>${label}<select ${attributes}>${options.map(option => `<option ${s[field] === option ? 'selected' : ''}>${option}</option>`).join('')}${field === 'pronoun' ? `<option value="custom" ${custom ? 'selected' : ''}>Custom…</option>` : ''}</select>${field === 'pronoun' ? `<div class="custom-pronouns" ${custom ? '' : 'hidden'}><label for="${escapeHTML(id)}-custom" class="visually-hidden">Custom pronouns for ${escapeHTML(displayName(s))} (X/Y)</label><input id="${escapeHTML(id)}-custom" data-custom-pronoun="${escapeHTML(s.id)}" maxlength="59" value="${custom ? escapeHTML(s.pronoun) : ''}" placeholder="X/Y, for example Ey/Em"><span class="pronoun-error" role="status" hidden>Enter pronouns as X/Y.</span></div>` : ''}</td>`;
     }
     return `<td>${label}<input ${attributes} type="text" maxlength="200" autocomplete="off" value="${escapeHTML(s[field])}" ${field === 'prefName' ? 'placeholder="Optional"' : ''}></td>`;
-  }).join('')}<td>${removeStudentButton(s)}</td></tr>`).join('')}</tbody></table>` : '<p class="empty-state">No students match. Add a student or change your filters.</p>';
+  }).join('')}<td>${removeStudentButton(s)}</td></tr>`).join('')}</tbody></table>` : '<p class="empty-state">No students yet.</p>';
   $('rosterList').insertAdjacentHTML('beforeend', '<button id="addStudentBottom" class="button add-student-bottom" aria-label="Add student to class list" title="Add student"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>');
   $('addStudentBottom').onclick = addStudentToClass;
   $('rosterList').querySelectorAll('[data-field]').forEach(input => {
@@ -344,15 +343,12 @@ function renderStudentEditor(students) {
 function renderRoster() {
   $('className').value = state.className;
   $('rosterSummary').textContent = `${state.students.length} ${state.students.length === 1 ? 'student' : 'students'}`;
-  const search = $('searchRoster').value.toLowerCase().trim();
-  const students = state.students.filter(s => `${s.fullName} ${s.prefName}`.toLowerCase().includes(search));
-  renderStudentEditor(students);
+  renderStudentEditor(state.students);
 }
 function openStudentEditor() {
-  $('searchRoster').value = '';
   setView('roster');
   const input = [...$('rosterList').querySelectorAll('[data-field="fullName"]')].find(field => field.dataset.student === currentId);
-  (input || $('searchRoster')).focus();
+  (input || $('addStudent')).focus();
 }
 function updateBankStatus() {
   $('bankEditStatus').textContent = bankDirty ? 'Unsaved phrase changes' : 'No unsaved changes';
@@ -679,8 +675,6 @@ $('markDone').onclick = () => {
   if (index < state.students.length - 1) moveStudent(1);
   else { updatePreview(); toast('Marked done. You’ve reached the last student.'); }
 };
-$('searchStudents').oninput = renderOverview;
-$('searchRoster').oninput = renderRoster;
 $('filterStatus').onchange = renderOverview;
 $('overviewTopic').onchange = event => { overviewCategory = event.target.value; renderOverview(); };
 $('bankTopic').onchange = event => { bankCategory = event.target.value; renderBank(); };

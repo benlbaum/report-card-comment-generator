@@ -136,12 +136,9 @@ main { padding: 0 0 24px; margin-inline: -40px; }
 #overviewView, #rosterView, #bankView { padding: 24px 28px; background: white; border-radius: 8px; }
 .progress-summary { font-weight: 600; font-size: .9375rem; }
 .overview-filters { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; margin: 16px 0 8px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
-.overview-filters .field:first-child { flex: 1; min-width: 180px; }
-.overview-filters .field:nth-child(2) { width: 170px; }
+.overview-filters .field { width: 170px; }
 .overview-filters .field:last-child { width: 240px; }
 #overviewPanel, #rosterPanel { overflow-x: auto; }
-.roster-filters { margin: 16px 0 8px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
-.roster-filters .field { max-width: 440px; }
 .student-editor { width: 100%; min-width: 740px; table-layout: fixed; border-collapse: collapse; }
 .student-editor caption { text-align: left; padding: 8px 0 12px; font-size: 1rem; font-weight: 600; }
 .student-editor th, .student-editor td { padding: 8px; border-bottom: 1px solid var(--line); text-align: left; }
@@ -253,7 +250,7 @@ dialog::backdrop { background: #23172b80; }
   .student-row > .row-comment { grid-column: 1 / -1; grid-row: 2; }
   .student-row.topic-row { min-width: 500px; grid-template-columns: 130px 88px minmax(180px, 1fr); }
   .student-row.topic-row > .row-comment { grid-column: 3; grid-row: 1; }
-  .overview-filters .field:nth-child(2) { width: 145px; } .overview-filters .field:last-child { width: 100%; }
+  .overview-filters .field { width: 145px; }
   .bank-save-bar { align-items: start; flex-direction: column; gap: 8px; } .phrase-edit-row { gap: 10px; }
   dialog { padding: 20px; }
 }
@@ -276,7 +273,7 @@ dialog::backdrop { background: #23172b80; }
   .phrase-edit-row label { font-size: .75rem; }
   .draft-section { padding: 16px; } .draft-actions { gap: 10px; } .draft-actions .muted { font-size: .6875rem; }
   .final-section .actions { gap: 8px; } .final-section .button { padding: 9px 12px; font-size: .8125rem; }
-  .overview-filters { flex-direction: column; align-items: stretch; } .overview-filters .field:nth-child(2) { width: 100%; }
+  .overview-filters { flex-direction: column; align-items: stretch; } .overview-filters .field, .overview-filters .field:last-child { width: 100%; }
   .toast { bottom: 16px; }
 }
 @media (prefers-reduced-motion: no-preference) { .phrase-option { transition: background-color 160ms ease-out, border-color 160ms ease-out; } }

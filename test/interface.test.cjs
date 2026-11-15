@@ -109,19 +109,19 @@ test('main edit-details link opens the selected student in the separate roster t
   assert.equal($('overviewView').contains($('addStudent')), false);
   assert.equal($('overviewList').querySelector('[data-remove-student]'), null);
 });
-test('roster and comments filters stay separate and repeated navigation keeps the overview in comments mode', t => {
+test('student search boxes are absent while comment progress filtering persists across roster navigation', t => {
   const { $, document, change } = setup(t);
   document.querySelector('[data-view="overview"]').click();
-  change('searchStudents', 'Jordan', 'input');
+  assert.equal($('searchStudents'), null);
+  assert.equal($('searchRoster'), null);
+  change('filterStatus', 'Draft');
   assert.equal($('overviewList').querySelectorAll('.student-name').length, 1);
   document.querySelector('[data-view="roster"]').click();
   assert.equal($('rosterList').querySelectorAll('tbody tr').length, 4);
-  change('searchRoster', 'Salman', 'input');
-  assert.equal($('rosterList').querySelectorAll('tbody tr').length, 1);
   document.querySelector('[data-view="bank"]').click();
   assert.equal($('rosterView').hidden, true);
   document.querySelector('[data-view="overview"]').click();
-  assert.equal($('searchStudents').value, 'Jordan');
+  assert.equal($('filterStatus').value, 'Draft');
   assert.equal($('overviewList').querySelector('.student-name').textContent, 'Jordan Lee');
   assert.equal($('overviewList').querySelector('table'), null);
   assert.equal(document.querySelector('.setup-nav').querySelector('[data-view="roster"]') != null, true);

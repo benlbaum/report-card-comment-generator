@@ -51,13 +51,12 @@
       <section id="overviewView" aria-labelledby="overviewHeading" hidden>
         <div class="page-heading overview-heading"><h2 id="overviewHeading">Class overview</h2><button id="exportComments" class="button primary">Export comments</button></div>
         <p id="classProgress" class="progress-summary"></p>
-        <div class="overview-filters"><div class="field"><label for="searchStudents">Find a student</label><input type="search" id="searchStudents" placeholder="Search names"></div><div class="field"><label for="filterStatus">Progress</label><select id="filterStatus"><option value="">All students</option><option>Not started</option><option>Draft</option><option>Done</option></select></div><div class="field" id="overviewTopicField"><label for="overviewTopic">Show comments</label><select id="overviewTopic"></select></div></div>
+        <div class="overview-filters"><div class="field"><label for="filterStatus">Progress</label><select id="filterStatus"><option value="">All students</option><option>Not started</option><option>Draft</option><option>Done</option></select></div><div class="field" id="overviewTopicField"><label for="overviewTopic">Show comments</label><select id="overviewTopic"></select></div></div>
         <div id="overviewPanel" role="region" aria-label="Class comments" tabindex="0"><div id="overviewList"></div></div>
       </section>
       <section id="rosterView" aria-labelledby="rosterHeading" hidden>
         <div class="page-heading roster-heading"><h2 id="rosterHeading" class="visually-hidden">Student roster</h2><div class="class-settings"><div class="field"><label for="className" class="visually-hidden">Class name</label><input id="className" maxlength="100" placeholder="Class name"></div><button id="newClass" class="text-button danger">Start a new class</button></div><button id="addStudent" class="button primary">Add student</button></div>
         <p id="rosterSummary" class="progress-summary"></p>
-        <div class="roster-filters"><div class="field"><label for="searchRoster">Find a student</label><input type="search" id="searchRoster" placeholder="Search names"></div></div>
         <div id="rosterPanel" role="region" aria-label="Student roster" tabindex="0"><div id="rosterList"></div></div>
       </section>
       <section id="bankView" aria-labelledby="bankHeading" hidden>

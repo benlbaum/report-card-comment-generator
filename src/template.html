@@ -55,7 +55,10 @@
         <div id="overviewPanel" role="region" aria-label="Class comments" tabindex="0"><div id="overviewList"></div></div>
       </section>
       <section id="rosterView" aria-labelledby="rosterHeading" hidden>
-        <div class="page-heading roster-heading"><h2 id="rosterHeading" class="visually-hidden">Student roster</h2><div class="class-settings"><div class="field"><label for="className" class="visually-hidden">Class name</label><input id="className" maxlength="100" placeholder="Class name"></div><button id="newClass" class="text-button danger">Start a new class</button></div><button id="addStudent" class="button primary">Add student</button></div>
+        <div class="page-heading roster-heading"><h2 id="rosterHeading" class="visually-hidden">Student roster</h2><div class="class-settings"><div class="field"><label for="className" class="visually-hidden">Class name</label><input id="className" maxlength="100" placeholder="Class name"></div><button id="newClass" class="text-button danger">Start a new class</button></div><div class="actions"><button id="rosterExport" class="button">Export roster</button><button id="rosterImport" class="button">Import roster</button><button id="addStudent" class="button primary">Add student</button></div></div>
+        <input id="rosterFile" class="visually-hidden" type="file" accept=".json,application/json" aria-label="Choose a student roster or class backup" tabindex="-1">
+        <p id="rosterImportError" class="inline-warning" role="alert" hidden></p>
+        <section id="rosterImportPreview" class="roster-import-preview" aria-label="Student roster import preview" hidden></section>
         <p id="rosterSummary" class="progress-summary"></p>
         <div id="rosterPanel" role="region" aria-label="Student roster" tabindex="0"><div id="rosterList"></div></div>
       </section>

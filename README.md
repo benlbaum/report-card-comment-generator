@@ -4,7 +4,7 @@ Open **Report Card Comment Builder.html** in a browser. It is a standalone file 
 
 - **Write comments:** choose a student, then choose from all topics in the topic dropdown and select a full, personalized phrase. **Next topic** walks through all topics in the order set in the bank. The current topic’s sentence is highlighted in the live draft. Use the draft as your final comment, edit it, and copy it. Use **Edit details** to open the Student roster tab at the selected student.
 - **Class overview:** review wrapped final comments or choose a topic from **Show comments** to edit phrase selections and values across the class. Click a student's name to open their comment. Filter by progress, and use **Export comments** to download a CSV.
-- **Student roster:** the setup tab beside Phrase bank holds the class name, Start a new class, student details, and Add/Remove actions. Edit names, preferred names, pronouns, and progress; changes save automatically. The plus button below the list adds a blank editable row.
+- **Student roster:** the setup tab beside Phrase bank holds the class name, Start a new class, student details, Export/Import roster, and Add/Remove actions. Edit names, preferred names, pronouns, and progress; changes save automatically. The plus button below the list adds a blank editable row.
 - **Phrase bank:** add, rename, remove, and reorder topics. Edit **Topic name**, then choose **Save bank**; student selections, entered values, and final comments are kept when a topic is renamed. Each topic uses **Selection** or **Value Entry**. Selection provides phrase choices; Value Entry accepts a number or text with a matching phrase. **Change order** opens a drag-and-drop window for topics or the current topic’s options, with keyboard Up/Down controls. Navigate topics with **Previous/Next**. Changes are staged until **Save bank**. Final comments are kept.
 - **Optional scores:** Fluency is a configurable topic, rather than a student detail. Use the topic name as the entry label, then define the unit, optional numeric limits, and a phrase such as `[HeShe] has a Fluency score of [Value].` Units appear beside the value field and in generated phrases. A unit already written after the token, such as `[Value]%`, is kept once. Enter each student's value while writing, or select that topic in Class overview. Blank entries are skipped, and zero is valid. `[Score]` remains supported in older phrases.
 - **Pronouns:** choose a preset (including They/Them, Ze/Hir, and Xe/Xem) or select **Custom…** and enter X/Y. `[HeShe]`, `[HeSheThey]`, `[HisHerTheir]`, and `[HimHerThem]` use the student's pronouns. The original phrases adjust common verb agreement for They/Them.
@@ -21,12 +21,14 @@ Student details and final comments stay intact. Replacing a bank clears draft se
 
 ## Sharing a roster between two teachers
 
-1. Teacher A selects **Share & back up → Export student roster**.
+1. Teacher A selects **Student roster → Export roster**.
 2. Send that JSON file to Teacher B, along with the HTML app if they do not already have it.
-3. Teacher B opens the app, selects **Share & back up**, chooses the JSON file, and selects **Add roster to my class**. To use exactly the shared student list, choose **Start class from roster** instead. That option replaces the current students after confirmation and offers Undo.
+3. Teacher B selects **Student roster → Import roster**, chooses the JSON file, reviews the preview, and selects **Add students to class**. To use exactly the shared student list, choose **Start class from roster** instead. That option replaces the current students after confirmation and offers Undo. A class backup can also supply just its student roster; incoming scores and comments are excluded.
 4. Both teachers write their own comments. The roster contains student IDs, names, preferred names, and pronouns. It does not contain scores, selections, final comments, or the phrase bank. Reimporting the same roster skips existing students and keeps the receiving teacher’s work.
 
 This is file sharing, not live collaboration. Export and import a new roster when students are added. Existing students are skipped rather than overwritten; edits to their names do not automatically update another teacher’s copy.
+
+Roster export and import are also available in **Share & back up**.
 
 **Export class backup** includes all students, custom pronouns, values, selections, comments, and bank settings. Restoring a backup replaces the current class after confirmation and offers Undo. Older version 1 exports from the original app are supported. A backup can also be imported as students only.
 

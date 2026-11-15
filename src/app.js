@@ -21,6 +21,7 @@ let undoState = null;
 let undoTimer;
 let toastTimer;
 let pendingImport = null;
+let pendingRosterImport = null;
 let pendingBankImport = null;
 let bankImportFilename = '';
 let orderDraft = null;
@@ -41,6 +42,7 @@ function save() {
     $('saveStatus').hidden = false;
   }
   $('classCount').textContent = state.students.length;
+  $('rosterExport').disabled = !state.students.some(s => s.fullName.trim());
 }
 function toast(message) {
   clearTimeout(toastTimer);
@@ -561,6 +563,36 @@ const datedFilename = stem => {
   const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   return `${stem}_${date}.json`;
 };
+function exportStudentRoster() {
+  download(Core.roster(state), datedFilename('StudentRoster'));
+  toast('Roster exported. Your co-teacher can import this file.');
+}
+function previewRosterImport(payload, filename) {
+  pendingRosterImport = payload;
+  const result = Core.mergeRoster(state.students, payload.students);
+  $('rosterImportPreview').hidden = false;
+  $('rosterImportPreview').innerHTML = `<h3>${escapeHTML(filename)}</h3><p>${payload.students.length} students · ${result.added} new · ${result.skipped} already in your class.</p><p>Names and pronouns only. Adding students keeps your existing comments and phrase bank.</p><div class="actions"><button id="addRosterStudents" class="button primary" ${result.added ? '' : 'disabled'}>Add students to class</button><button id="replaceRosterStudents" class="button">Start class from roster</button><button id="cancelRosterImport" class="text-button">Cancel</button></div>`;
+  $('addRosterStudents').onclick = () => applyRosterImport(false);
+  $('replaceRosterStudents').onclick = () => applyRosterImport(true);
+  $('cancelRosterImport').onclick = () => { pendingRosterImport = null; $('rosterImportPreview').hidden = true; };
+}
+async function applyRosterImport(replace) {
+  const payload = pendingRosterImport;
+  if (!payload) return;
+  if (replace && !await confirmAction('Start a class from this roster?', 'This replaces your students and their comments with the imported roster. Your phrase bank will be kept. You can undo this change.', 'Start from roster')) return;
+  snapshot(replace ? 'Started a class from the shared roster.' : 'Student roster imported. Existing comments were kept.');
+  const result = Core.mergeRoster(replace ? [] : state.students, payload.students);
+  const wasEmpty = !state.students.length;
+  state.students = result.students;
+  if (replace || wasEmpty) state.className = payload.className;
+  if (!current() || replace) currentId = state.students[0]?.id;
+  pendingRosterImport = null;
+  $('rosterImportPreview').hidden = true;
+  save();
+  setView('roster');
+  $('rosterImport').focus();
+  toast(`${result.added} students added · ${result.skipped} already in your class.`);
+}
 function previewImport(payload) {
   pendingImport = payload;
   const roster = payload.kind === 'roster';
@@ -906,7 +938,32 @@ $('shareBtn').onclick = () => {
   $('shareDialog').showModal();
 };
 $('closeShare').onclick = () => $('shareDialog').close();
-$('exportRoster').onclick = () => { download(Core.roster(state), datedFilename('StudentRoster')); toast('Roster exported. Your co-teacher can import this file.'); };
+$('exportRoster').onclick = exportStudentRoster;
+$('rosterExport').onclick = exportStudentRoster;
+$('rosterImport').onclick = () => {
+  $('rosterFile').value = '';
+  $('rosterImportError').hidden = true;
+  $('rosterFile').click();
+};
+$('rosterFile').onchange = async event => {
+  const file = event.target.files[0];
+  pendingRosterImport = null;
+  $('rosterImportError').hidden = true;
+  $('rosterImportPreview').hidden = true;
+  if (!file) return;
+  try {
+    if (file.size > 10 * 1024 * 1024) throw new Error('Choose a JSON file smaller than 10 MB.');
+    const imported = Core.validate(JSON.parse(await file.text()), state);
+    if (file !== $('rosterFile').files[0]) return;
+    const roster = Core.validate(Core.roster(imported), state);
+    if (!roster.students.length) throw new Error('This file has no named students to import.');
+    previewRosterImport(roster, file.name || 'Imported roster');
+  } catch (error) {
+    if (file !== $('rosterFile').files[0]) return;
+    $('rosterImportError').textContent = error instanceof SyntaxError ? 'This is not valid JSON. Choose a student roster or class backup.' : error.message;
+    $('rosterImportError').hidden = false;
+  }
+};
 $('exportBackup').onclick = () => { download(Core.backup(state), datedFilename('ReportCardClass')); toast('Class backup exported.'); };
 $('importFile').onchange = async event => {
   const file = event.target.files[0];

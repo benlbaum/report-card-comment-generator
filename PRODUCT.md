@@ -46,3 +46,5 @@ Teachers can export/import bank-only files to reuse definitions and ordering acr
 Student roster setup lives in its own tab alongside Phrase bank. Class overview is dedicated to comment review, topic/value editing, and export. Roster setup holds class naming, new-class setup, and student add/edit/remove controls. The writing screen links directly to the current student in this roster.
 
 Teachers can sort students A–Z by first, last, or preferred name. Sorting persists across views and exports, retains the current student and all work, and supports Undo.
+
+Transfer controls live in the relevant sections. Class overview exports/imports complete JSON class backups, including all comments, scores, selections, and the bank, while retaining CSV comment export. Import previews the class before a confirmed replacement and supports Undo. Student roster handles identity-only transfers; Phrase bank handles bank-only transfers. The masthead contains no sharing menu.

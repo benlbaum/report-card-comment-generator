@@ -69,7 +69,6 @@ label { display: block; font-size: .875rem; font-weight: 600; margin-bottom: 6px
 .app { max-width: 1440px; margin: auto; padding: 0 40px; }
 .app-header { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 18px 40px; margin: 0 -40px; background: var(--plum); color: white; }
 .app-header p { color: #e8dfee; font-size: .8125rem; margin-top: 5px; }
-.app-header .button { background: #ffffff; border-color: #ffffff; color: var(--plum); }
 .app-header :focus-visible { outline-color: #efd08c; }
 .button { min-height: 42px; padding: 9px 15px; border: 1px solid #c5bdcd; border-radius: 6px; background: white; color: var(--plum); font-size: .875rem; line-height: 1.45; font-weight: 600; white-space: nowrap; }
 .button:hover:not(:disabled) { background: #f0e9f4; border-color: #9d8aaa; }
@@ -182,9 +181,10 @@ main { padding: 0 0 24px; margin-inline: -40px; }
 .bank-tools { display: flex; align-items: end; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 12px; }
 .bank-topic-nav { flex: 1 1 480px; max-width: 660px; display: grid; grid-template-columns: minmax(0, 1fr) 80px 80px; align-items: end; gap: 10px; }
 .bank-topic { min-width: 0; }
-.bank-import-preview, .roster-import-preview { margin-bottom: 20px; padding: 16px; background: var(--plum-tint); border-radius: 6px; }
-.bank-import-preview p, .roster-import-preview p { margin: 8px 0 12px; font-size: .875rem; }
-.bank-import-preview h3, .roster-import-preview h3 { overflow-wrap: anywhere; }
+.bank-import-preview, .roster-import-preview, .class-import-preview { margin-bottom: 20px; padding: 16px; background: var(--plum-tint); border-radius: 6px; }
+.bank-import-preview p, .roster-import-preview p, .class-import-preview p { margin: 8px 0 12px; font-size: .875rem; }
+.bank-import-preview h3, .roster-import-preview h3, .class-import-preview h3 { overflow-wrap: anywhere; }
+.class-import-preview p { overflow-wrap: anywhere; }
 .bank-topic-list { list-style: none; padding: 0; margin: 0; }
 .bank-list-columns, .bank-topic-row { display: grid; grid-template-columns: 28px minmax(160px, 1fr) 130px minmax(150px, .7fr) 64px; gap: 12px; align-items: center; }
 .bank-list-columns { padding: 12px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: .75rem; font-weight: 600; }
@@ -239,12 +239,6 @@ main { padding: 0 0 24px; margin-inline: -40px; }
 .empty-state { padding: 24px 0; color: var(--muted); }
 dialog { max-width: 620px; width: calc(100% - 32px); max-height: calc(100dvh - 48px); margin: auto; padding: 28px; border: 0; border-radius: 12px; color: var(--ink); background: white; box-shadow: 0 18px 60px #00000040; }
 dialog::backdrop { background: #23172b80; }
-.dialog-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.share-section { margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--line); }
-.share-section p { font-size: .875rem; margin: 8px 0 14px; }
-.share-section p.helper { font-size: .8125rem; }
-.file-label, input[type="file"] { font-size: .8125rem; }
-#importPreview { padding: 16px; background: var(--plum-tint); border-radius: 6px; margin-top: 16px; }
 #confirmDialog, #categoryDialog { max-width: 460px; }
 #confirmDialog p, #categoryDialog .field { margin: 18px 0 22px; }
 #confirmDialog .actions, #categoryDialog .actions { justify-content: end; }
@@ -267,7 +261,6 @@ dialog::backdrop { background: #23172b80; }
   .value-settings { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .phrase-edit-row { gap: 8px; }
   .app { padding: 0 18px; } .app-header { margin: 0 -18px; padding: 16px 18px; gap: 16px; } h1 { font-size: 1.25rem; }
-  .app-header .button { padding: 9px 12px; white-space: normal; max-width: 125px; flex-shrink: 0; }
   .main-nav { margin: 0 -18px; padding: 0 18px; gap: 14px; } .setup-nav { gap: 14px; } .nav-link { font-size: .8125rem; } .count { display: none; }
   main { padding-top: 0; margin-inline: -18px; }
   .student-toolbar { column-gap: 8px; }
@@ -313,7 +306,6 @@ dialog::backdrop { background: #23172b80; }
   <div class="app">
     <header class="app-header">
       <div><h1>Report Card Comment Builder</h1><p id="saveStatus" role="status" hidden></p></div>
-      <button id="shareBtn" class="button">Share &amp; back up</button>
     </header>
     <nav class="main-nav" aria-label="Main navigation">
       <button class="nav-link active" data-view="write" aria-current="page">Write comments</button>
@@ -350,7 +342,10 @@ dialog::backdrop { background: #23172b80; }
         </div>
       </section>
       <section id="overviewView" aria-labelledby="overviewHeading" hidden>
-        <div class="page-heading overview-heading"><h2 id="overviewHeading">Class overview</h2><button id="exportComments" class="button primary">Export comments</button></div>
+        <div class="page-heading overview-heading"><h2 id="overviewHeading">Class overview</h2><div class="actions"><button id="exportBackup" class="button">Export class backup</button><button id="importClass" class="button">Import class backup</button><button id="exportComments" class="button primary">Export comments</button></div></div>
+        <input id="importFile" class="visually-hidden" type="file" accept=".json,application/json" aria-label="Choose a class backup including comments (.json)" tabindex="-1">
+        <p id="importError" class="inline-warning" role="alert" hidden></p>
+        <section id="importPreview" class="class-import-preview" aria-label="Class backup import preview" hidden></section>
         <p id="classProgress" class="progress-summary"></p>
         <div class="overview-filters"><div class="field"><label for="filterStatus">Progress</label><select id="filterStatus"><option value="">All students</option><option>Not started</option><option>Draft</option><option>Done</option></select></div><div class="field" id="overviewTopicField"><label for="overviewTopic">Show comments</label><select id="overviewTopic"></select></div></div>
         <div id="overviewPanel" role="region" aria-label="Class comments" tabindex="0"><div id="overviewList"></div></div>
@@ -400,12 +395,6 @@ dialog::backdrop { background: #23172b80; }
       </section>
     </main>
   </div>
-  <dialog id="shareDialog" aria-labelledby="shareHeading">
-    <div class="dialog-heading"><h2 id="shareHeading">Share &amp; back up</h2><button id="closeShare" class="button">Close</button></div>
-    <section class="share-section"><h3>Share roster</h3><p>Send the roster file to your co-teacher to import.</p><p class="helper">Names and pronouns only. Comments and scores stay separate; files don’t sync.</p><button id="exportRoster" class="button primary">Export student roster</button></section>
-    <section class="share-section"><h3>Class backup</h3><p>Includes students, selections, scores, comments, and phrases.</p><button id="exportBackup" class="button">Export class backup</button></section>
-    <section class="share-section"><h3>Import</h3><p>Add a roster or restore a backup.</p><label class="file-label" for="importFile">Choose a roster or backup (.json)</label><input id="importFile" type="file" accept=".json,application/json"><p id="importError" class="inline-warning" role="alert" hidden></p><div id="importPreview" hidden></div></section>
-  </dialog>
   <dialog id="confirmDialog" aria-labelledby="confirmHeading"><h2 id="confirmHeading"></h2><p id="confirmMessage"></p><div class="actions"><button id="cancelConfirm" class="button">Cancel</button><button id="acceptConfirm" class="button primary">Continue</button></div></dialog>
   <dialog id="categoryDialog" aria-labelledby="categoryDialogHeading"><form id="categoryForm"><h2 id="categoryDialogHeading">Add topic</h2><div class="field"><label for="newCategoryName">Topic name</label><input id="newCategoryName" maxlength="100" required placeholder="For example, Writing"></div><p id="categoryError" role="alert" class="inline-warning" hidden></p><div class="actions"><button type="button" id="cancelCategory" class="button">Cancel</button><button class="button primary">Add topic</button></div></form></dialog>
   <div id="toast" class="toast" role="status" hidden></div>
@@ -606,7 +595,7 @@ try {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) state = Core.validate(JSON.parse(saved), state);
 } catch {
-  startupMessage = 'Saved work could not be loaded. You can import a class backup from Share & back up.';
+  startupMessage = 'Saved work could not be loaded. Import a class backup from Class overview.';
 }
 let currentId = state.students[0]?.id;
 let view = 'write';
@@ -1256,53 +1245,35 @@ async function applyRosterImport(replace) {
   $('rosterImport').focus();
   toast(`${result.added} students added · ${result.skipped} already in your class.`);
 }
-function previewImport(payload) {
+function previewImport(payload, filename) {
   pendingImport = payload;
-  const roster = payload.kind === 'roster';
-  const result = Core.mergeRoster(state.students, payload.students);
-  const names = payload.students.slice(0, 5).map(s => displayName(s)).join(', ');
+  const comments = payload.students.filter(student => student.finalComment.trim()).length;
+  const count = (amount, label) => `${amount} ${label}${amount === 1 ? '' : 's'}`;
+  const summary = [count(payload.students.length, 'student'), count(comments, 'saved comment'), count(payload.categoryOrder.length, 'topic')].join(' · ');
   $('importPreview').hidden = false;
-  $('importPreview').innerHTML = `<h3>${roster ? 'Student roster' : 'Class backup'} · ${escapeHTML(payload.className)}</h3><p>${payload.students.length} students${names ? ': ' + escapeHTML(names) : ''}${payload.students.length > 5 ? '…' : ''}</p>
-    <p>${roster ? `${result.added} students will be added; ${result.skipped} already in your class will be skipped. Your comments and phrase bank will be kept.` : 'Restore replaces this class, including final comments and the phrase bank. You can undo after restoring.'}</p>
-    <div class="actions"><button id="applyImport" class="button primary">${roster ? 'Add roster to my class' : 'Restore class backup'}</button>${roster ? '<button id="startFromRoster" class="button">Start class from roster</button>' : '<button id="importAsRoster" class="button">Import students only</button>'}</div>`;
-  $('applyImport').onclick = () => applyImport(roster);
-  if ($('importAsRoster')) $('importAsRoster').onclick = () => applyImport(true);
-  if ($('startFromRoster')) $('startFromRoster').onclick = startFromRoster;
+  $('importPreview').innerHTML = `<h3>${escapeHTML(payload.className)}</h3><p>${escapeHTML(filename)} · ${summary}</p><p>Includes student details, comments, scores, selections, and the phrase bank. Restoring replaces the current class and supports Undo.</p><div class="actions"><button id="applyImport" class="button primary">Restore class backup</button><button id="cancelClassImport" class="text-button">Cancel</button></div>`;
+  $('applyImport').onclick = applyImport;
+  $('cancelClassImport').onclick = () => {
+    pendingImport = null;
+    $('importPreview').hidden = true;
+    $('importClass').focus();
+  };
 }
-async function startFromRoster() {
-  const payload = pendingImport;
-  if (!payload || !await confirmAction('Start a class from this roster?', 'This replaces your students and their comments with the shared student list. Your phrase bank will be kept. Export a backup first to keep a separate copy, or undo after importing.', 'Start from roster')) return;
-  snapshot('Started a class from the shared roster.');
-  state.students = Core.mergeRoster([], payload.students).students;
-  state.className = payload.className;
-  currentId = state.students[0]?.id;
-  pendingImport = null;
-  $('shareDialog').close();
-  save();
-  setView('write');
-  toast('Shared roster ready. Write your own comments for this class.');
-}
-async function applyImport(rosterOnly) {
+async function applyImport() {
   const payload = pendingImport;
   if (!payload) return;
-  if (!rosterOnly && !await confirmAction('Restore this class backup?', 'This replaces your current class and phrase bank. Export a backup first if you want a separate copy. You can also undo this restore.', 'Restore backup')) return;
-  snapshot(rosterOnly ? 'Roster imported. Existing comments were kept.' : 'Class backup restored.');
-  if (rosterOnly) {
-    const result = Core.mergeRoster(state.students, payload.students);
-    state.students = result.students;
-    if (!current()) currentId = state.students[0]?.id;
-    if (undoState.students.length === 0) state.className = payload.className;
-    toast(`${result.added} students added · ${result.skipped} already in your class.`);
-  } else {
-    state = { className: payload.className, students: payload.students, categories: payload.categories, categoryOrder: payload.categoryOrder, topicSettings: payload.topicSettings };
-    currentId = state.students[0]?.id;
-    resetBankDraft();
-    toast('Class backup restored.');
-  }
+  const message = 'This replaces your current students, comments, scores, and phrase bank.' + (bankDirty ? ' Unsaved phrase-bank edits will also be replaced.' : '') + ' Export a class backup first to keep a separate copy. You can undo this restore.';
+  if (!await confirmAction('Restore this class backup?', message, 'Restore backup')) return;
+  snapshot('Class backup restored.');
+  state = {className:payload.className, students:payload.students, categories:payload.categories, categoryOrder:payload.categoryOrder, topicSettings:payload.topicSettings};
+  currentId = state.students[0]?.id;
+  resetBankDraft();
   pendingImport = null;
-  $('shareDialog').close();
+  $('importPreview').hidden = true;
   save();
-  setView(view);
+  setView('overview');
+  $('importClass').focus();
+  toast('Class backup restored, including comments.');
 }
 
 document.querySelectorAll('[data-view]').forEach(button => { button.onclick = () => {
@@ -1581,16 +1552,6 @@ $('bankFile').onchange = async event => {
     $('bankFileError').hidden = false;
   }
 };
-$('shareBtn').onclick = () => {
-  pendingImport = null;
-  $('importFile').value = '';
-  $('importPreview').hidden = true;
-  $('importError').hidden = true;
-  $('exportRoster').disabled = !state.students.some(s => s.fullName.trim());
-  $('shareDialog').showModal();
-};
-$('closeShare').onclick = () => $('shareDialog').close();
-$('exportRoster').onclick = exportStudentRoster;
 $('rosterExport').onclick = exportStudentRoster;
 $('rosterImport').onclick = () => {
   $('rosterFile').value = '';
@@ -1617,6 +1578,13 @@ $('rosterFile').onchange = async event => {
   }
 };
 $('exportBackup').onclick = () => { download(Core.backup(state), datedFilename('ReportCardClass')); toast('Class backup exported.'); };
+$('importClass').onclick = () => {
+  pendingImport = null;
+  $('importFile').value = '';
+  $('importPreview').hidden = true;
+  $('importError').hidden = true;
+  $('importFile').click();
+};
 $('importFile').onchange = async event => {
   const file = event.target.files[0];
   pendingImport = null;
@@ -1625,10 +1593,14 @@ $('importFile').onchange = async event => {
   if (!file) return;
   try {
     if (file.size > 10 * 1024 * 1024) throw new Error('Choose a JSON file smaller than 10 MB.');
-    const payload = JSON.parse(await file.text());
-    previewImport(Core.validate(payload, state));
+    const raw = JSON.parse(await file.text());
+    if (file !== $('importFile').files[0]) return;
+    if (raw?.kind === 'roster') throw new Error('This file contains student details only. Import it from Student roster.');
+    const payload = Core.validate(raw);
+    previewImport(payload, file.name || 'Class backup');
   } catch (error) {
-    $('importError').textContent = error instanceof SyntaxError ? 'This is not valid JSON. Choose a roster or backup exported from this app.' : error.message;
+    if (file !== $('importFile').files[0]) return;
+    $('importError').textContent = error instanceof SyntaxError ? 'This is not valid JSON. Choose a class backup exported from this app.' : error.message;
     $('importError').hidden = false;
   }
 };

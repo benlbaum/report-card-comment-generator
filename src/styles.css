@@ -62,7 +62,6 @@ label { display: block; font-size: .875rem; font-weight: 600; margin-bottom: 6px
 .app { max-width: 1440px; margin: auto; padding: 0 40px; }
 .app-header { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 18px 40px; margin: 0 -40px; background: var(--plum); color: white; }
 .app-header p { color: #e8dfee; font-size: .8125rem; margin-top: 5px; }
-.app-header .button { background: #ffffff; border-color: #ffffff; color: var(--plum); }
 .app-header :focus-visible { outline-color: #efd08c; }
 .button { min-height: 42px; padding: 9px 15px; border: 1px solid #c5bdcd; border-radius: 6px; background: white; color: var(--plum); font-size: .875rem; line-height: 1.45; font-weight: 600; white-space: nowrap; }
 .button:hover:not(:disabled) { background: #f0e9f4; border-color: #9d8aaa; }
@@ -175,9 +174,10 @@ main { padding: 0 0 24px; margin-inline: -40px; }
 .bank-tools { display: flex; align-items: end; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 12px; }
 .bank-topic-nav { flex: 1 1 480px; max-width: 660px; display: grid; grid-template-columns: minmax(0, 1fr) 80px 80px; align-items: end; gap: 10px; }
 .bank-topic { min-width: 0; }
-.bank-import-preview, .roster-import-preview { margin-bottom: 20px; padding: 16px; background: var(--plum-tint); border-radius: 6px; }
-.bank-import-preview p, .roster-import-preview p { margin: 8px 0 12px; font-size: .875rem; }
-.bank-import-preview h3, .roster-import-preview h3 { overflow-wrap: anywhere; }
+.bank-import-preview, .roster-import-preview, .class-import-preview { margin-bottom: 20px; padding: 16px; background: var(--plum-tint); border-radius: 6px; }
+.bank-import-preview p, .roster-import-preview p, .class-import-preview p { margin: 8px 0 12px; font-size: .875rem; }
+.bank-import-preview h3, .roster-import-preview h3, .class-import-preview h3 { overflow-wrap: anywhere; }
+.class-import-preview p { overflow-wrap: anywhere; }
 .bank-topic-list { list-style: none; padding: 0; margin: 0; }
 .bank-list-columns, .bank-topic-row { display: grid; grid-template-columns: 28px minmax(160px, 1fr) 130px minmax(150px, .7fr) 64px; gap: 12px; align-items: center; }
 .bank-list-columns { padding: 12px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: .75rem; font-weight: 600; }
@@ -232,12 +232,6 @@ main { padding: 0 0 24px; margin-inline: -40px; }
 .empty-state { padding: 24px 0; color: var(--muted); }
 dialog { max-width: 620px; width: calc(100% - 32px); max-height: calc(100dvh - 48px); margin: auto; padding: 28px; border: 0; border-radius: 12px; color: var(--ink); background: white; box-shadow: 0 18px 60px #00000040; }
 dialog::backdrop { background: #23172b80; }
-.dialog-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.share-section { margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--line); }
-.share-section p { font-size: .875rem; margin: 8px 0 14px; }
-.share-section p.helper { font-size: .8125rem; }
-.file-label, input[type="file"] { font-size: .8125rem; }
-#importPreview { padding: 16px; background: var(--plum-tint); border-radius: 6px; margin-top: 16px; }
 #confirmDialog, #categoryDialog { max-width: 460px; }
 #confirmDialog p, #categoryDialog .field { margin: 18px 0 22px; }
 #confirmDialog .actions, #categoryDialog .actions { justify-content: end; }
@@ -260,7 +254,6 @@ dialog::backdrop { background: #23172b80; }
   .value-settings { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .phrase-edit-row { gap: 8px; }
   .app { padding: 0 18px; } .app-header { margin: 0 -18px; padding: 16px 18px; gap: 16px; } h1 { font-size: 1.25rem; }
-  .app-header .button { padding: 9px 12px; white-space: normal; max-width: 125px; flex-shrink: 0; }
   .main-nav { margin: 0 -18px; padding: 0 18px; gap: 14px; } .setup-nav { gap: 14px; } .nav-link { font-size: .8125rem; } .count { display: none; }
   main { padding-top: 0; margin-inline: -18px; }
   .student-toolbar { column-gap: 8px; }

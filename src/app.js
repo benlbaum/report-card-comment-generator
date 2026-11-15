@@ -8,7 +8,7 @@ try {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) state = Core.validate(JSON.parse(saved), state);
 } catch {
-  startupMessage = 'Saved work could not be loaded. You can import a class backup from Share & back up.';
+  startupMessage = 'Saved work could not be loaded. Import a class backup from Class overview.';
 }
 let currentId = state.students[0]?.id;
 let view = 'write';
@@ -658,53 +658,35 @@ async function applyRosterImport(replace) {
   $('rosterImport').focus();
   toast(`${result.added} students added · ${result.skipped} already in your class.`);
 }
-function previewImport(payload) {
+function previewImport(payload, filename) {
   pendingImport = payload;
-  const roster = payload.kind === 'roster';
-  const result = Core.mergeRoster(state.students, payload.students);
-  const names = payload.students.slice(0, 5).map(s => displayName(s)).join(', ');
+  const comments = payload.students.filter(student => student.finalComment.trim()).length;
+  const count = (amount, label) => `${amount} ${label}${amount === 1 ? '' : 's'}`;
+  const summary = [count(payload.students.length, 'student'), count(comments, 'saved comment'), count(payload.categoryOrder.length, 'topic')].join(' · ');
   $('importPreview').hidden = false;
-  $('importPreview').innerHTML = `<h3>${roster ? 'Student roster' : 'Class backup'} · ${escapeHTML(payload.className)}</h3><p>${payload.students.length} students${names ? ': ' + escapeHTML(names) : ''}${payload.students.length > 5 ? '…' : ''}</p>
-    <p>${roster ? `${result.added} students will be added; ${result.skipped} already in your class will be skipped. Your comments and phrase bank will be kept.` : 'Restore replaces this class, including final comments and the phrase bank. You can undo after restoring.'}</p>
-    <div class="actions"><button id="applyImport" class="button primary">${roster ? 'Add roster to my class' : 'Restore class backup'}</button>${roster ? '<button id="startFromRoster" class="button">Start class from roster</button>' : '<button id="importAsRoster" class="button">Import students only</button>'}</div>`;
-  $('applyImport').onclick = () => applyImport(roster);
-  if ($('importAsRoster')) $('importAsRoster').onclick = () => applyImport(true);
-  if ($('startFromRoster')) $('startFromRoster').onclick = startFromRoster;
+  $('importPreview').innerHTML = `<h3>${escapeHTML(payload.className)}</h3><p>${escapeHTML(filename)} · ${summary}</p><p>Includes student details, comments, scores, selections, and the phrase bank. Restoring replaces the current class and supports Undo.</p><div class="actions"><button id="applyImport" class="button primary">Restore class backup</button><button id="cancelClassImport" class="text-button">Cancel</button></div>`;
+  $('applyImport').onclick = applyImport;
+  $('cancelClassImport').onclick = () => {
+    pendingImport = null;
+    $('importPreview').hidden = true;
+    $('importClass').focus();
+  };
 }
-async function startFromRoster() {
-  const payload = pendingImport;
-  if (!payload || !await confirmAction('Start a class from this roster?', 'This replaces your students and their comments with the shared student list. Your phrase bank will be kept. Export a backup first to keep a separate copy, or undo after importing.', 'Start from roster')) return;
-  snapshot('Started a class from the shared roster.');
-  state.students = Core.mergeRoster([], payload.students).students;
-  state.className = payload.className;
-  currentId = state.students[0]?.id;
-  pendingImport = null;
-  $('shareDialog').close();
-  save();
-  setView('write');
-  toast('Shared roster ready. Write your own comments for this class.');
-}
-async function applyImport(rosterOnly) {
+async function applyImport() {
   const payload = pendingImport;
   if (!payload) return;
-  if (!rosterOnly && !await confirmAction('Restore this class backup?', 'This replaces your current class and phrase bank. Export a backup first if you want a separate copy. You can also undo this restore.', 'Restore backup')) return;
-  snapshot(rosterOnly ? 'Roster imported. Existing comments were kept.' : 'Class backup restored.');
-  if (rosterOnly) {
-    const result = Core.mergeRoster(state.students, payload.students);
-    state.students = result.students;
-    if (!current()) currentId = state.students[0]?.id;
-    if (undoState.students.length === 0) state.className = payload.className;
-    toast(`${result.added} students added · ${result.skipped} already in your class.`);
-  } else {
-    state = { className: payload.className, students: payload.students, categories: payload.categories, categoryOrder: payload.categoryOrder, topicSettings: payload.topicSettings };
-    currentId = state.students[0]?.id;
-    resetBankDraft();
-    toast('Class backup restored.');
-  }
+  const message = 'This replaces your current students, comments, scores, and phrase bank.' + (bankDirty ? ' Unsaved phrase-bank edits will also be replaced.' : '') + ' Export a class backup first to keep a separate copy. You can undo this restore.';
+  if (!await confirmAction('Restore this class backup?', message, 'Restore backup')) return;
+  snapshot('Class backup restored.');
+  state = {className:payload.className, students:payload.students, categories:payload.categories, categoryOrder:payload.categoryOrder, topicSettings:payload.topicSettings};
+  currentId = state.students[0]?.id;
+  resetBankDraft();
   pendingImport = null;
-  $('shareDialog').close();
+  $('importPreview').hidden = true;
   save();
-  setView(view);
+  setView('overview');
+  $('importClass').focus();
+  toast('Class backup restored, including comments.');
 }
 
 document.querySelectorAll('[data-view]').forEach(button => { button.onclick = () => {
@@ -983,16 +965,6 @@ $('bankFile').onchange = async event => {
     $('bankFileError').hidden = false;
   }
 };
-$('shareBtn').onclick = () => {
-  pendingImport = null;
-  $('importFile').value = '';
-  $('importPreview').hidden = true;
-  $('importError').hidden = true;
-  $('exportRoster').disabled = !state.students.some(s => s.fullName.trim());
-  $('shareDialog').showModal();
-};
-$('closeShare').onclick = () => $('shareDialog').close();
-$('exportRoster').onclick = exportStudentRoster;
 $('rosterExport').onclick = exportStudentRoster;
 $('rosterImport').onclick = () => {
   $('rosterFile').value = '';
@@ -1019,6 +991,13 @@ $('rosterFile').onchange = async event => {
   }
 };
 $('exportBackup').onclick = () => { download(Core.backup(state), datedFilename('ReportCardClass')); toast('Class backup exported.'); };
+$('importClass').onclick = () => {
+  pendingImport = null;
+  $('importFile').value = '';
+  $('importPreview').hidden = true;
+  $('importError').hidden = true;
+  $('importFile').click();
+};
 $('importFile').onchange = async event => {
   const file = event.target.files[0];
   pendingImport = null;
@@ -1027,10 +1006,14 @@ $('importFile').onchange = async event => {
   if (!file) return;
   try {
     if (file.size > 10 * 1024 * 1024) throw new Error('Choose a JSON file smaller than 10 MB.');
-    const payload = JSON.parse(await file.text());
-    previewImport(Core.validate(payload, state));
+    const raw = JSON.parse(await file.text());
+    if (file !== $('importFile').files[0]) return;
+    if (raw?.kind === 'roster') throw new Error('This file contains student details only. Import it from Student roster.');
+    const payload = Core.validate(raw);
+    previewImport(payload, file.name || 'Class backup');
   } catch (error) {
-    $('importError').textContent = error instanceof SyntaxError ? 'This is not valid JSON. Choose a roster or backup exported from this app.' : error.message;
+    if (file !== $('importFile').files[0]) return;
+    $('importError').textContent = error instanceof SyntaxError ? 'This is not valid JSON. Choose a class backup exported from this app.' : error.message;
     $('importError').hidden = false;
   }
 };

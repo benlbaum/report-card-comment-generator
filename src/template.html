@@ -12,7 +12,6 @@
   <div class="app">
     <header class="app-header">
       <div><h1>Report Card Comment Builder</h1><p id="saveStatus" role="status" hidden></p></div>
-      <button id="shareBtn" class="button">Share &amp; back up</button>
     </header>
     <nav class="main-nav" aria-label="Main navigation">
       <button class="nav-link active" data-view="write" aria-current="page">Write comments</button>
@@ -49,7 +48,10 @@
         </div>
       </section>
       <section id="overviewView" aria-labelledby="overviewHeading" hidden>
-        <div class="page-heading overview-heading"><h2 id="overviewHeading">Class overview</h2><button id="exportComments" class="button primary">Export comments</button></div>
+        <div class="page-heading overview-heading"><h2 id="overviewHeading">Class overview</h2><div class="actions"><button id="exportBackup" class="button">Export class backup</button><button id="importClass" class="button">Import class backup</button><button id="exportComments" class="button primary">Export comments</button></div></div>
+        <input id="importFile" class="visually-hidden" type="file" accept=".json,application/json" aria-label="Choose a class backup including comments (.json)" tabindex="-1">
+        <p id="importError" class="inline-warning" role="alert" hidden></p>
+        <section id="importPreview" class="class-import-preview" aria-label="Class backup import preview" hidden></section>
         <p id="classProgress" class="progress-summary"></p>
         <div class="overview-filters"><div class="field"><label for="filterStatus">Progress</label><select id="filterStatus"><option value="">All students</option><option>Not started</option><option>Draft</option><option>Done</option></select></div><div class="field" id="overviewTopicField"><label for="overviewTopic">Show comments</label><select id="overviewTopic"></select></div></div>
         <div id="overviewPanel" role="region" aria-label="Class comments" tabindex="0"><div id="overviewList"></div></div>
@@ -99,12 +101,6 @@
       </section>
     </main>
   </div>
-  <dialog id="shareDialog" aria-labelledby="shareHeading">
-    <div class="dialog-heading"><h2 id="shareHeading">Share &amp; back up</h2><button id="closeShare" class="button">Close</button></div>
-    <section class="share-section"><h3>Share roster</h3><p>Send the roster file to your co-teacher to import.</p><p class="helper">Names and pronouns only. Comments and scores stay separate; files don’t sync.</p><button id="exportRoster" class="button primary">Export student roster</button></section>
-    <section class="share-section"><h3>Class backup</h3><p>Includes students, selections, scores, comments, and phrases.</p><button id="exportBackup" class="button">Export class backup</button></section>
-    <section class="share-section"><h3>Import</h3><p>Add a roster or restore a backup.</p><label class="file-label" for="importFile">Choose a roster or backup (.json)</label><input id="importFile" type="file" accept=".json,application/json"><p id="importError" class="inline-warning" role="alert" hidden></p><div id="importPreview" hidden></div></section>
-  </dialog>
   <dialog id="confirmDialog" aria-labelledby="confirmHeading"><h2 id="confirmHeading"></h2><p id="confirmMessage"></p><div class="actions"><button id="cancelConfirm" class="button">Cancel</button><button id="acceptConfirm" class="button primary">Continue</button></div></dialog>
   <dialog id="categoryDialog" aria-labelledby="categoryDialogHeading"><form id="categoryForm"><h2 id="categoryDialogHeading">Add topic</h2><div class="field"><label for="newCategoryName">Topic name</label><input id="newCategoryName" maxlength="100" required placeholder="For example, Writing"></div><p id="categoryError" role="alert" class="inline-warning" hidden></p><div class="actions"><button type="button" id="cancelCategory" class="button">Cancel</button><button class="button primary">Add topic</button></div></form></dialog>
   <div id="toast" class="toast" role="status" hidden></div>

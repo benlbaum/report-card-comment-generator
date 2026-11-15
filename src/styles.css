@@ -199,8 +199,7 @@ main { padding: 0 0 24px; margin-inline: -40px; }
 .token-help { font-size: .8125rem; color: var(--muted); }
 .token-help summary { width: fit-content; cursor: pointer; padding: 4px 0; }
 #bankPanel { width: 100%; }
-.bank-topic-settings { padding-bottom: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--line); }
-.bank-topic-settings > summary { width: fit-content; padding: 8px 0; color: var(--plum); font-size: .875rem; font-weight: 600; cursor: pointer; }
+.bank-topic-settings { padding: 4px 0 12px; margin: 16px 0 20px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .bank-config { display: flex; align-items: end; flex-wrap: wrap; gap: 16px; padding: 12px 0; }
 .value-input-wrap { display: flex; align-items: stretch; min-width: 0; }
 .value-input-wrap input { border-top-right-radius: 0; border-bottom-right-radius: 0; }

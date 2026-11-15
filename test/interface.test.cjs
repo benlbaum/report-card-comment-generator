@@ -502,13 +502,16 @@ test('phrase boxes use a single editable field and retain selections after reord
   assert.equal(saved().students[0].selections.Effort, '[PrefName] is building persistence.');
   assert.equal(saved().categories.Effort.length, 1);
 });
-test('phrase bank keeps configuration in topic settings and value phrase editing outside the disclosure', t => {
+test('phrase bank keeps topic settings visible without a collapse control and value phrase editing separate', t => {
   const ui = setup(t);
   const {$, document, change} = ui;
   document.querySelector('[data-view="bank"]').click();
-  assert.equal($('bankTopicSettings').open, false);
+  assert.equal($('bankTopicSettings').tagName, 'SECTION');
+  assert.equal($('bankTopicSettings').hidden, false);
+  assert.equal($('bankTopicSettings').querySelector('summary'), null);
   for (const id of ['bankTopicName', 'topicType', 'removeCategory', 'valueUnit']) {
-    assert.equal($(id).closest('details'), $('bankTopicSettings'));
+    assert.equal($(id).closest('#bankTopicSettings'), $('bankTopicSettings'));
+    assert.equal($(id).closest('details'), null);
   }
   assert.equal($('phraseEditor').querySelector('[data-option-up], [data-option-down]'), null);
   assert.equal($('phraseEditor').querySelectorAll('[data-remove]').length, 5);
@@ -744,6 +747,44 @@ test('roster sorting supports first, last and preferred names while preserving w
     assert.deepEqual(ui.saved().students, before.students);
     ui.document.querySelector('[data-view="roster"]').click();
   }
+});
+test('sort notices dismiss after six seconds despite hover and resume dismissal after keyboard focus leaves', t => {
+  const ui = setup(t);
+  let now = 0;
+  let nextId = 1;
+  const timers = new Map();
+  ui.window.setTimeout = (callback, delay) => {
+    const id = nextId++;
+    timers.set(id, {callback, due:now + delay});
+    return id;
+  };
+  ui.window.clearTimeout = id => timers.delete(id);
+  const advance = ms => {
+    now += ms;
+    for (const [id, timer] of [...timers]) {
+      if (timer.due > now) continue;
+      timers.delete(id);
+      timer.callback();
+    }
+  };
+  ui.document.querySelector('[data-view="roster"]').click();
+  ui.change('rosterSort', 'last');
+  const sorted = ui.saved().students;
+  assert.equal(ui.$('undoNotice').hidden, false);
+  ui.$('undoNotice').dispatchEvent(new ui.window.MouseEvent('mouseenter'));
+  advance(5999);
+  assert.equal(ui.$('undoNotice').hidden, false);
+  advance(1);
+  assert.equal(ui.$('undoNotice').hidden, true);
+  assert.equal(ui.$('toast').hidden, true);
+  assert.deepEqual(ui.saved().students, sorted);
+  ui.change('rosterSort', 'first');
+  ui.$('undoBtn').focus();
+  advance(7000);
+  assert.equal(ui.$('undoNotice').hidden, false, 'keyboard users retain access while using the notice');
+  ui.$('rosterSort').focus();
+  advance(6000);
+  assert.equal(ui.$('undoNotice').hidden, true);
 });
 test('only Selection and Value Entry are offered, and configured units appear beside the entry and in its draft', t => {
   const ui = setup(t);

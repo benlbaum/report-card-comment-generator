@@ -60,7 +60,7 @@ function snapshot(message) {
 }
 function scheduleUndoNotice() {
   clearTimeout(undoTimer);
-  undoTimer = setTimeout(() => { $('undoNotice').hidden = true; }, 10000);
+  undoTimer = setTimeout(() => { $('undoNotice').hidden = true; }, 6000);
 }
 function confirmAction(title, message, label) {
   $('confirmHeading').textContent = title;
@@ -385,7 +385,6 @@ function openStudentEditor() {
 function updateBankStatus() {
   $('bankEditStatus').textContent = bankDirty ? 'Unsaved phrase changes' : 'No unsaved changes';
   const invalidName = !$('bankTopicName').validity.valid;
-  if (invalidName) $('bankTopicSettings').open = true;
   $('saveBank').disabled = !bankDirty || invalidName;
   $('exportBank').disabled = invalidName;
   $('discardBank').disabled = !bankDirty;
@@ -825,10 +824,10 @@ $('undoBtn').onclick = () => {
   toast('Previous class state restored.');
 };
 $('dismissUndo').onclick = () => { undoState = null; clearTimeout(undoTimer); $('undoNotice').hidden = true; };
-$('undoNotice').onmouseenter = () => clearTimeout(undoTimer);
-$('undoNotice').onmouseleave = () => { if (!$('undoNotice').contains(document.activeElement)) scheduleUndoNotice(); };
-$('undoNotice').onfocusin = () => clearTimeout(undoTimer);
-$('undoNotice').onfocusout = () => scheduleUndoNotice();
+$('undoNotice').addEventListener('focusin', () => clearTimeout(undoTimer));
+$('undoNotice').addEventListener('focusout', event => {
+  if (!$('undoNotice').contains(event.relatedTarget)) scheduleUndoNotice();
+});
 $('changeBankOrder').onclick = () => {
   orderDraft = clone(bankDraft);
   draggedOrderIndex = null;

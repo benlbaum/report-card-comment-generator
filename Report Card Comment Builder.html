@@ -206,8 +206,7 @@ main { padding: 0 0 24px; margin-inline: -40px; }
 .token-help { font-size: .8125rem; color: var(--muted); }
 .token-help summary { width: fit-content; cursor: pointer; padding: 4px 0; }
 #bankPanel { width: 100%; }
-.bank-topic-settings { padding-bottom: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--line); }
-.bank-topic-settings > summary { width: fit-content; padding: 8px 0; color: var(--plum); font-size: .875rem; font-weight: 600; cursor: pointer; }
+.bank-topic-settings { padding: 4px 0 12px; margin: 16px 0 20px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .bank-config { display: flex; align-items: end; flex-wrap: wrap; gap: 16px; padding: 12px 0; }
 .value-input-wrap { display: flex; align-items: stretch; min-width: 0; }
 .value-input-wrap input { border-top-right-radius: 0; border-bottom-right-radius: 0; }
@@ -373,7 +372,7 @@ dialog::backdrop { background: #23172b80; }
         <div class="bank-tools"><div class="bank-topic-nav"><div class="bank-topic field"><div class="topic-label"><label for="bankTopic">Topic</label><span id="bankPosition" class="muted"></span></div><select id="bankTopic"></select></div><button id="previousBankTopic" class="button" aria-label="Previous bank topic">Previous</button><button id="nextBankTopic" class="button" aria-label="Next bank topic">Next</button></div><button id="changeBankOrder" class="button">Change order</button></div>
         <div id="bankPanel">
           <h3 id="bankCategoryName" class="visually-hidden"></h3>
-          <details id="bankTopicSettings" class="bank-topic-settings"><summary>Topic settings</summary>
+          <section id="bankTopicSettings" class="bank-topic-settings" aria-labelledby="topicSettingsHeading"><h3 id="topicSettingsHeading" class="visually-hidden">Topic settings</h3>
           <div class="bank-config"><div class="field bank-name-field"><label for="bankTopicName">Topic name</label><input id="bankTopicName" maxlength="100" autocomplete="off" aria-describedby="topicNameError"><p id="topicNameError" class="inline-warning" role="alert" hidden></p></div><div class="field bank-type-field"><label for="topicType">Entry type</label><select id="topicType"><option value="selection">Selection</option><option value="value">Value Entry</option></select></div><button id="removeCategory" class="text-button danger">Remove topic</button></div>
           <div id="valueSettings" class="value-settings" hidden>
             <div class="field"><label for="valueType">Value type</label><select id="valueType"><option value="number">Number</option><option value="text">Text</option></select></div>
@@ -381,7 +380,7 @@ dialog::backdrop { background: #23172b80; }
             <div class="field number-setting"><label for="valueMin">Minimum</label><input id="valueMin" type="number" step="any" placeholder="None"></div>
             <div class="field number-setting"><label for="valueMax">Maximum</label><input id="valueMax" type="number" step="any" placeholder="None"></div>
           </div>
-          </details>
+          </section>
           <div class="bank-definition-heading"><h3 id="bankDefinitionHeading">Phrases</h3><details class="token-help"><summary>Phrase tokens</summary><p class="helper tokens"><code>[FullName]</code> <code>[PrefName]</code> <code>[HeShe]</code> <code>[HeSheThey]</code> <code>[HisHerTheir]</code> <code>[HimHerThem]</code> <code>[Value]</code> <span>[Score] also works in older phrases.</span></p></details></div>
           <div class="field value-template"><label for="valuePhrase" class="visually-hidden">Matching phrase</label><textarea id="valuePhrase" rows="1" maxlength="10000" placeholder="[HeShe] has a Fluency score of [Value]%."></textarea><p class="helper">Use [Value] where the entry belongs. Leave a student's entry blank to skip it.</p></div>
           <div id="phraseEditor"></div>
@@ -658,7 +657,7 @@ function snapshot(message) {
 }
 function scheduleUndoNotice() {
   clearTimeout(undoTimer);
-  undoTimer = setTimeout(() => { $('undoNotice').hidden = true; }, 10000);
+  undoTimer = setTimeout(() => { $('undoNotice').hidden = true; }, 6000);
 }
 function confirmAction(title, message, label) {
   $('confirmHeading').textContent = title;
@@ -983,7 +982,6 @@ function openStudentEditor() {
 function updateBankStatus() {
   $('bankEditStatus').textContent = bankDirty ? 'Unsaved phrase changes' : 'No unsaved changes';
   const invalidName = !$('bankTopicName').validity.valid;
-  if (invalidName) $('bankTopicSettings').open = true;
   $('saveBank').disabled = !bankDirty || invalidName;
   $('exportBank').disabled = invalidName;
   $('discardBank').disabled = !bankDirty;
@@ -1423,10 +1421,10 @@ $('undoBtn').onclick = () => {
   toast('Previous class state restored.');
 };
 $('dismissUndo').onclick = () => { undoState = null; clearTimeout(undoTimer); $('undoNotice').hidden = true; };
-$('undoNotice').onmouseenter = () => clearTimeout(undoTimer);
-$('undoNotice').onmouseleave = () => { if (!$('undoNotice').contains(document.activeElement)) scheduleUndoNotice(); };
-$('undoNotice').onfocusin = () => clearTimeout(undoTimer);
-$('undoNotice').onfocusout = () => scheduleUndoNotice();
+$('undoNotice').addEventListener('focusin', () => clearTimeout(undoTimer));
+$('undoNotice').addEventListener('focusout', event => {
+  if (!$('undoNotice').contains(event.relatedTarget)) scheduleUndoNotice();
+});
 $('changeBankOrder').onclick = () => {
   orderDraft = clone(bankDraft);
   draggedOrderIndex = null;

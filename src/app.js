@@ -13,6 +13,7 @@ try {
 }
 let currentId = state.students[0]?.id;
 let view = 'write';
+let helpReturnView = 'write';
 let activeCategory = state.categoryOrder[0];
 let overviewCategory = 'Final comments';
 let bankCategory = state.categoryOrder[0];
@@ -82,7 +83,9 @@ function confirmAction(title, message, label) {
 }
 function setView(next) {
   view = next;
-  for (const name of ['write', 'overview', 'roster', 'bank']) $(name + 'View').hidden = name !== view;
+  for (const name of ['write', 'overview', 'roster', 'bank', 'help']) $(name + 'View').hidden = name !== view;
+  if (view === 'help') $('openHelp').setAttribute('aria-current', 'page');
+  else $('openHelp').removeAttribute('aria-current');
   document.querySelectorAll('[data-view]').forEach(button => {
     const selected = button.dataset.view === view;
     button.classList.toggle('active', selected);
@@ -739,6 +742,16 @@ async function applyImport() {
   toast('Class backup restored, including comments.');
 }
 
+$('openHelp').onclick = event => {
+  event.preventDefault();
+  if (view !== 'help') helpReturnView = view;
+  setView('help');
+  $('helpHeading').focus();
+};
+$('closeHelp').onclick = () => {
+  setView(helpReturnView);
+  $('openHelp').focus();
+};
 document.querySelectorAll('[data-view]').forEach(button => { button.onclick = () => {
   if (button.dataset.view === 'bank') bankEditing = false;
   setView(button.dataset.view);

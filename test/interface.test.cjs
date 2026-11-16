@@ -1434,3 +1434,50 @@ test('an over-limit live draft can still be used and trimmed in the final editor
   assert.equal(ui.$('commentLimitWarning').hidden,false);
   assert.equal(ui.saved().students[0].finalComment,phrase);
 });
+
+test('Help opens from any section and returns without changing comments, selections, or pending bank edits', t => {
+  const ui = setup(t);
+  ui.change('finalText','Keep this unfinished comment.','input');
+  ui.choose('0');
+  const saved = ui.saved();
+  ui.$('openHelp').click();
+  assert.equal(ui.$('helpView').hidden,false);
+  assert.equal(ui.$('writeView').hidden,true);
+  assert.equal(ui.document.activeElement,ui.$('helpHeading'));
+  assert.equal(ui.$('openHelp').getAttribute('aria-current'),'page');
+  ui.$('openHelp').click();
+  ui.$('closeHelp').click();
+  assert.equal(ui.$('writeView').hidden,false);
+  assert.equal(ui.$('finalText').value,'Keep this unfinished comment.');
+  assert.equal(ui.choice(),'0');
+  assert.equal(ui.document.activeElement,ui.$('openHelp'));
+  assert.deepEqual(ui.saved(),saved);
+  for (const view of ['overview','roster','bank']) {
+    ui.document.querySelector(`[data-view="${view}"]`).click();
+    if (view==='bank') {
+      editBankTopic(ui.document);
+      ui.change('phrase-0','A pending phrase edit.','input');
+    }
+    ui.$('openHelp').click();
+    ui.$('closeHelp').click();
+    assert.equal(ui.$(view+'View').hidden,false);
+  }
+  assert.equal(ui.$('bankTopicEditor').hidden,false);
+  assert.equal(ui.$('phrase-0').value,'A pending phrase edit.');
+  assert.equal(ui.$('saveBank').disabled,false);
+  assert.deepEqual(ui.saved(),saved);
+});
+test('Help explains storage, each transfer format, and the main tools in bullet lists', t => {
+  const ui = setup(t);
+  ui.$('openHelp').click();
+  const help = ui.$('helpView');
+  assert.equal(help.querySelectorAll('.help-content section').length,4);
+  assert.equal(help.querySelectorAll('ul').length,4);
+  assert.match(help.textContent,/Local storage:.*save automatically.*shutting down/s);
+  assert.match(help.textContent,/No import is needed each visit/);
+  assert.match(help.textContent,/private windows.*clearing browser data/s);
+  for (const term of ['Class backup (JSON)','Comments (CSV)','Roster:','Phrase bank:','Files are copies:','Save bank','Load default bank','1,000 characters','Value Entry']) assert.equal(help.textContent.includes(term),true,term);
+  ui.document.querySelector('[data-view="roster"]').click();
+  assert.equal(help.hidden,true);
+  assert.equal(ui.$('openHelp').hasAttribute('aria-current'),false);
+});

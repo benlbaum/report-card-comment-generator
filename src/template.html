@@ -12,7 +12,10 @@
   <div class="app">
     <header class="app-header">
       <h1>Report Card Comment Builder</h1>
+      <div class="header-tools">
       <details class="storage-help"><summary><span id="saveStatus" role="status">Student work saves automatically</span></summary><p>Comments, selections, values, and student details stay in this browser after you close it or turn off your computer. Return to this site in the same browser and profile—no import needed.</p><p>Use a regular window, not private browsing. Export a class backup from Class overview to move your work or protect against cleared browser data. Work is not synced between devices.</p><p>Phrase-bank edits need <strong>Save bank</strong> before you leave.</p></details>
+      <a id="openHelp" class="header-help" href="#helpView" aria-controls="helpView">Help</a>
+      </div>
     </header>
     <nav class="main-nav" aria-label="Main navigation">
       <button class="nav-link active" data-view="write" aria-current="page">Write comments</button>
@@ -100,6 +103,36 @@
         </div>
         </div>
         <div class="bank-save-bar"><span id="bankEditStatus" class="muted">No unsaved changes</span><div class="actions"><button id="discardBank" class="button" disabled>Discard changes</button><button id="saveBank" class="button primary" disabled>Save bank</button></div></div>
+      </section>
+      <section id="helpView" aria-labelledby="helpHeading" hidden>
+        <div class="page-heading"><h2 id="helpHeading" tabindex="-1">Help</h2><button id="closeHelp" class="button">Back to your work</button></div>
+        <div class="help-content">
+          <section aria-labelledby="helpSaving"><h3 id="helpSaving">Saving your work</h3><ul>
+            <li><strong>Local storage:</strong> student details, comments, choices, and values save automatically in this browser, including after closing it or shutting down.</li>
+            <li><strong>Returning:</strong> use the same site, browser, profile, and device. No import is needed each visit; devices do not sync.</li>
+            <li><strong>Phrase-bank edits:</strong> choose Save bank before leaving. Discard changes cancels pending edits.</li>
+            <li><strong>Keep a backup:</strong> private windows or clearing browser data can erase work. Export a class backup for a safety copy or to move devices.</li>
+          </ul></section>
+          <section aria-labelledby="helpFiles"><h3 id="helpFiles">Importing and exporting</h3><ul>
+            <li><strong>Class backup (JSON):</strong> all students, comments, choices, values, and the saved phrase bank—not the website. Import class backup replaces the current class after confirmation; Undo is available.</li>
+            <li><strong>Comments (CSV):</strong> final comments for a spreadsheet or report cards. This file cannot restore your class.</li>
+            <li><strong>Roster:</strong> share student names and pronouns. Comments, values, and phrases are excluded. Import can add students or start a class from the list.</li>
+            <li><strong>Phrase bank:</strong> share phrases, settings, and order—no students or comments. Import can add new topics or replace the bank; choose Save bank to apply it.</li>
+            <li><strong>Files are copies:</strong> editing an exported file does not update the site. Import the changed file in its matching section.</li>
+          </ul></section>
+          <section aria-labelledby="helpWriting"><h3 id="helpWriting">Writing comments</h3><ul>
+            <li><strong>Student and Topic:</strong> choose each dropdown or use Previous/Next. Pick a phrase; Skip this topic leaves it out.</li>
+            <li><strong>Live draft:</strong> builds from your choices. Use draft copies it to the final comment, where you can edit freely.</li>
+            <li><strong>Value Entry:</strong> enter a value and pick its matching phrase. Units are added automatically; blank skips the topic, and zero is valid.</li>
+            <li><strong>Final comment:</strong> copy it or choose Mark done &amp; next. The counter warns above 1,000 characters but lets you keep editing.</li>
+          </ul></section>
+          <section aria-labelledby="helpSetup"><h3 id="helpSetup">Class and phrase tools</h3><ul>
+            <li><strong>Student roster:</strong> add, edit, remove, or sort students. Start a new class replaces students and comments while keeping the phrase bank.</li>
+            <li><strong>Class overview:</strong> review and filter comments, copy each student's text, or choose a topic to edit across the class.</li>
+            <li><strong>Phrase bank:</strong> edit topics, Selection options, or Value Entry phrases. Drag handles to reorder; focused handles also use Up/Down keys.</li>
+            <li><strong>Load default bank:</strong> previews the starter phrases before replacing anything. Save bank applies the change.</li>
+          </ul></section>
+        </div>
       </section>
     </main>
   </div>

@@ -415,7 +415,7 @@ dialog::backdrop { background: #23172b80; }
 /* Pure data functions, shared by the standalone app and its tests. */
 const Core = (() => {
   const statuses = ['Not started', 'Draft', 'Done'];
-  const pronouns = ['She/Her', 'He/Him', 'They/Them', 'She/They', 'He/They', 'Ze/Hir', 'Xe/Xem'];
+  const pronouns = ['He/Him', 'She/Her', 'They/Them'];
   const own = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
   const object = value => value && typeof value === 'object' && !Array.isArray(value);
   const text = (value, max = 20000) => typeof value === 'string' ? value.slice(0, max) : '';

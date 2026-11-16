@@ -1,5 +1,7 @@
 # Report Card Comment Builder
 
+Open source under the [BSD Zero Clause license (0BSD)](LICENSE). Anyone may use, modify, and redistribute this project for any purpose, including commercial use, without fees, attribution, or a requirement to publish changes. Provided as-is, without warranty. Third-party development dependencies retain their own licenses.
+
 Open **Report Card Comment Builder.html** in a browser. It is a standalone file and works offline; no installation or account is needed.
 
 - **Help:** the top-right link opens short bullet points about local storage, every import/export option, and the main tools. **Back to your work** returns to the previous section, keeping the current student, comment, and pending bank edits.
@@ -13,6 +15,8 @@ Open **Report Card Comment Builder.html** in a browser. It is a standalone file 
 - **Saving and returning:** student details, comments, phrase selections, and entered values save immediately to **localStorage**, not sessionStorage. Closing the browser or shutting down the computer does not remove them. Return to the same site in the same browser/profile on the same device; no backup/import is needed for normal visits. The header explains this. Private browsing, cleared browser data, a different browser/profile/device, or moving from a downloaded file to the hosted site require a backup to transfer or restore work. Phrase-bank edits remain pending until **Save bank**; the bank shows a clear unsaved message and warns before closing. Storage failures show an explicit warning to export a backup.
 
 ## Sharing the tool with other teachers
+
+For a school-hosted copy, give IT the [school hosting guide](HOSTING.md). They can publish **public/index.html** as a standalone HTTPS page; no database or application server is needed.
 
 Use **public/index.html** for distribution. It is a clean, self-contained copy with no embedded student records and Kelly’s 14-topic starting phrase bank. New teachers land on Student roster to add or import their students. Existing browser work is retained when the app is updated at the same address.
 

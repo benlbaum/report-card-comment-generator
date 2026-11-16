@@ -8,5 +8,6 @@
   },
   "devDependencies": {
     "jsdom": "^31.0.1"
-  }
+  },
+  "license": "0BSD"
 }

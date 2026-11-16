@@ -6,6 +6,16 @@ const Core = (() => {
   const object = value => value && typeof value === 'object' && !Array.isArray(value);
   const text = (value, max = 20000) => typeof value === 'string' ? value.slice(0, max) : '';
   const validPronouns = value => typeof value === 'string' && /^[\p{L}][\p{L}'’-]{0,28}\/[\p{L}][\p{L}'’-]{0,28}$/u.test(value.trim());
+  const normalizePhrase = phrase => String(phrase ?? '').replace(/\[\s*(?:Score|value)\s*\]/gi, '[Value]').replace(/\[(FullName|PrefName|HeShe|HeSheThey|HisHerTheir|HimHerThem|he\/she)\s+\](?=\S)/g, '[$1] ').replace(/\[\s*(FullName|PrefName|HeShe|HeSheThey|HisHerTheir|HimHerThem|he\/she)\s*\]/g, '[$1]');
+  const valuePhrases = config => Array.isArray(config?.phrases) ? config.phrases : [{label:'', phrase:normalizePhrase(config?.phrase || '')}];
+  function phraseOptions(opts) {
+    if (!Array.isArray(opts) || opts.length > 100) throw new Error('Each topic can contain at most 100 phrases.');
+    return opts.map(opt => {
+      if (typeof opt === 'string') opt = {phrase:opt};
+      if (!object(opt) || typeof opt.phrase !== 'string' || opt.phrase.length > 10000) throw new Error('Each phrase needs valid phrase text.');
+      return {label:normalizePhrase(text(opt.label, 300)), phrase:normalizePhrase(opt.phrase)};
+    });
+  }
   const identity = s => [s.fullName, s.prefName, s.pronoun].map(v => String(v || '').trim().toLowerCase()).join('|');
   const legacyId = s => {
     let hash = 2166136261;
@@ -16,10 +26,10 @@ const Core = (() => {
     if (!object(raw) || typeof raw.fullName !== 'string') throw new Error('Each student needs a fullName text field.');
     const score = raw.fluencyScore;
     if (score !== '' && score != null && (!Number.isFinite(Number(score)) || Number(score) < 0 || Number(score) > 100)) {
-      throw new Error('Fluency scores must be between 0 and 100.');
+      throw new Error('Fluency values must be between 0 and 100.');
     }
     const selections = object(raw.selections)
-      ? Object.fromEntries(Object.entries(raw.selections).filter(([,v]) => typeof v === 'string' || Number.isInteger(v))) : {};
+      ? Object.fromEntries(Object.entries(raw.selections).filter(([,v]) => typeof v === 'string' || Number.isInteger(v)).map(([cat,v]) => [cat, typeof v === 'string' ? normalizePhrase(v) : v])) : {};
     return {
       id: text(raw.id, 200) || legacyId(raw), fullName: text(raw.fullName, 200).trim(),
       prefName: text(raw.prefName, 200).trim(), pronoun: validPronouns(raw.pronoun) ? raw.pronoun.trim() : 'She/Her',
@@ -35,10 +45,7 @@ const Core = (() => {
     const entries = Object.entries(raw).map(([cat, opts]) => {
       if (!cat.trim() || cat.length > 100 || ['__proto__', 'constructor', 'prototype'].includes(cat)) throw new Error('That category name cannot be used.');
       if (!Array.isArray(opts) || opts.length > 100) throw new Error('Each category must contain a list of at most 100 phrases.');
-      return [cat, opts.map(opt => {
-        if (!object(opt) || typeof opt.phrase !== 'string' || opt.phrase.length > 10000) throw new Error('Each phrase needs a valid phrase text field.');
-        return { label: text(opt.label, 300), phrase: opt.phrase };
-      })];
+      return [cat, phraseOptions(opts)];
     });
     const categories = Object.fromEntries(entries);
     const categoryOrder = [...new Set([...(Array.isArray(order) ? order.filter(c => typeof c === 'string' && own(categories, c)) : []), ...Object.keys(categories)])];
@@ -48,13 +55,16 @@ const Core = (() => {
       const min = config.min === '' || config.min == null ? '' : Number(config.min);
       const max = config.max === '' || config.max == null ? '' : Number(config.max);
       if (min !== '' && !Number.isFinite(min) || max !== '' && !Number.isFinite(max) || min !== '' && max !== '' && min > max) throw new Error('Enter valid minimum and maximum values.');
+      const phrase = normalizePhrase(text(config.phrase, 10000)) || (legacyFluency ? '[HeShe] has a Fluency score of [Value]%.' : '[PrefName] has a value of [Value].');
+      const phrases = own(config, 'phrases') ? phraseOptions(config.phrases) : config.type === 'value' || legacyFluency ? [{label:'', phrase}] : [];
       return [cat, {
         type: config.type === 'value' || legacyFluency ? 'value' : 'selection',
         valueLabel: cat,
         valueType: config.valueType === 'text' ? 'text' : 'number',
         unit: text(config.unit, 30) || (legacyFluency ? '%' : ''),
         min: legacyFluency ? 0 : min, max: legacyFluency ? 100 : max,
-        phrase: text(config.phrase, 10000) || (legacyFluency ? '[HeShe] has a Fluency score of [Value]%.' : '[PrefName] has a value of [Value].')
+        phrase: phrases[0]?.phrase || phrase,
+        phrases
       }];
     }));
     return { categories, categoryOrder, topicSettings };
@@ -74,12 +84,19 @@ const Core = (() => {
       s.selections = Object.fromEntries(Object.entries(s.selections).flatMap(([cat, selected]) => {
         const opts = own(b.categories, cat) ? b.categories[cat] : [];
         const phrase = typeof selected === 'number' || /^\d+$/.test(selected) ? opts[Number(selected)]?.phrase : selected;
-        return opts.some(o => o.phrase === phrase) || b.topicSettings[cat]?.type === 'value' && phrase === b.topicSettings[cat].phrase ? [[cat, phrase]] : [];
+        const config = b.topicSettings[cat];
+        if (config?.type === 'value' && opts.some(o => o.phrase === phrase) && !valuePhrases(config).some(o => o.phrase === phrase)) config.phrases.push({...opts.find(o => o.phrase === phrase)});
+        return opts.some(o => o.phrase === phrase) || b.topicSettings[cat]?.type === 'value' && valuePhrases(b.topicSettings[cat]).some(o => o.phrase === phrase) ? [[cat, phrase]] : [];
       }));
     }
     return { kind: isRoster ? 'roster' : 'backup', className: text(payload.className, 100) || 'My class', students, ...b };
   }
   function personalize(phrase, s, value = s.fluencyScore, unit = '') {
+    phrase = normalizePhrase(phrase);
+    if (unit && typeof value === 'string' && value.trim().toLowerCase().endsWith(unit.trim().toLowerCase())) {
+      const withoutUnit = value.trim().slice(0, -unit.trim().length).trim();
+      if (withoutUnit && Number.isFinite(Number(withoutUnit))) value = withoutUnit;
+    }
     const full = s.fullName.trim() || 'Student';
     const [subject, rawObject] = s.pronoun.toLowerCase().split('/');
     const objectPronoun = rawObject === 'they' && ['she', 'he'].includes(subject) ? (subject === 'she' ? 'her' : 'him') : rawObject;
@@ -122,7 +139,7 @@ const Core = (() => {
   function topicSentence(s, state, cat) {
     const phrase = own(s.selections, cat) ? s.selections[cat] : '';
     const config = state.topicSettings?.[cat];
-    if (!state.categories[cat]?.some(o => o.phrase === phrase) && !(config?.type === 'value' && phrase === config.phrase)) return '';
+    if (!state.categories[cat]?.some(o => o.phrase === phrase) && !(config?.type === 'value' && valuePhrases(config).some(o => o.phrase === phrase))) return '';
     return personalize(phrase, s, topicValue(s, cat), config?.unit);
   }
   function draft(s, state) {
@@ -131,7 +148,7 @@ const Core = (() => {
       return sentence ? [sentence] : [];
     }).join(' ');
   }
-  function needsScore(s, state) { return Object.entries(s.selections).some(([cat, p]) => /\[(Score|Value|value)\]/.test(p) && (topicValue(s, cat) === '' || !!(state && valueError(topicValue(s, cat), state.topicSettings[cat])))); }
+  function needsValue(s, state) { return Object.entries(s.selections).some(([cat, p]) => (/\[(Score|Value|value)\]/.test(p) || state?.topicSettings[cat]?.type === 'value') && (topicValue(s, cat) === '' || !!(state && valueError(topicValue(s, cat), state.topicSettings[cat])))); }
   function roster(state) {
     return {
       version: 2, kind: 'roster', className: state.className, exportedAt: new Date().toISOString(),
@@ -146,7 +163,7 @@ const Core = (() => {
     const result = bank(payload.categories, payload.categoryOrder, payload.topicSettings);
     if (new Set(result.categoryOrder.map(cat => cat.toLowerCase())).size !== result.categoryOrder.length) throw new Error('Each topic needs a unique name, including capitalization.');
     for (const cat of result.categoryOrder) {
-      if (result.topicSettings[cat].type === 'value' && !/\[(Value|value|Score)\]/.test(result.topicSettings[cat].phrase)) throw new Error(`Add [Value] to the matching phrase for ${cat}.`);
+      if (result.topicSettings[cat].type === 'value' && (!result.topicSettings[cat].phrases.length || result.topicSettings[cat].phrases.some(opt => !opt.phrase.trim()))) throw new Error(`Add matching phrase text for ${cat}.`);
     }
     return result;
   }
@@ -172,13 +189,13 @@ const Core = (() => {
     for (const s of state.students) {
       if (s.finalComment.trim()) { existing++; continue; }
       const comment = draft(s, state);
-      if (!s.fullName.trim() || !comment || needsScore(s, state)) { incomplete++; continue; }
+      if (!s.fullName.trim() || !comment || needsValue(s, state)) { incomplete++; continue; }
       s.finalComment = comment;
       s.status = 'Draft';
       generated++;
     }
     return { generated, existing, incomplete };
   }
-  return { student, bank, validate, personalize, draft, needsScore, roster, backup, mergeRoster, generateAll, topicValue, topicSentence, valueError, pronouns, validPronouns, bankFile, exportBank };
+  return { student, bank, validate, personalize, draft, needsValue, needsScore:needsValue, roster, backup, mergeRoster, generateAll, topicValue, topicSentence, valueError, pronouns, validPronouns, bankFile, exportBank, normalizePhrase, valuePhrases };
 })();
 if (typeof module !== 'undefined') module.exports = Core;

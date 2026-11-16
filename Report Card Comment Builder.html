@@ -70,6 +70,12 @@ label { display: block; font-size: .875rem; font-weight: 600; margin-bottom: 6px
 .app-header { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 18px 40px; margin: 0 -40px; background: var(--plum); color: white; }
 .app-header p { color: #e8dfee; font-size: .8125rem; margin-top: 5px; }
 .app-header :focus-visible { outline-color: #efd08c; }
+.storage-help { flex: 0 1 340px; font-size: .8125rem; color: #e8dfee; }
+.storage-help summary { cursor: pointer; text-align: right; padding: 6px 0; }
+.storage-help[open] { flex-basis: 440px; }
+.storage-help p { max-width: 65ch; }
+.storage-help.storage-error { color: #ffdfad; }
+.storage-help.storage-error summary { font-weight: 600; }
 .button { min-height: 42px; padding: 9px 15px; border: 1px solid #c5bdcd; border-radius: 6px; background: white; color: var(--plum); font-size: .875rem; line-height: 1.45; font-weight: 600; white-space: nowrap; }
 .button:hover:not(:disabled) { background: #f0e9f4; border-color: #9d8aaa; }
 .button:active:not(:disabled) { background: #e4d7ec; }
@@ -117,9 +123,7 @@ main { padding: 0 0 24px; margin-inline: -40px; }
 .phrase-option input { accent-color: var(--plum); width: 17px; height: 17px; flex: 0 0 17px; margin: 3px 0 0; padding: 0; }
 .phrase-option span { overflow-wrap: anywhere; }
 .topic-extra-value { margin-top: 20px; max-width: 300px; }
-.topic-value-entry { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px; }
-.topic-value-entry > .text-button { min-height: 42px; }
-.value-preview { grid-column: 1 / -1; white-space: pre-wrap; overflow-wrap: anywhere; font-size: .875rem; color: var(--plum); padding: 12px 0; }
+.topic-value-entry { max-width: 300px; }
 #finalHeading label { font: inherit; margin: 0; }
 .draft-section { background: var(--plum-tint); padding: 18px 20px; border-radius: 6px; margin: 16px 0; }
 .draft-section h3 { color: var(--plum); }
@@ -217,9 +221,9 @@ main { padding: 0 0 24px; margin-inline: -40px; }
 .bank-definition-heading .token-help .helper { margin-bottom: 0; }
 #bankTopicName[aria-invalid="true"] { border-color: var(--danger); }
 .value-settings { display: grid; grid-template-columns: minmax(100px, 1fr) minmax(100px, 1fr) minmax(80px, 1fr) minmax(80px, 1fr); gap: 16px; margin: 16px 0; }
-.value-template { grid-column: 1 / -1; }
-.value-template textarea { min-height: 44px; overflow-y: hidden; }
-.value-template .helper { margin: 4px 0 0; }
+.overview-value-controls { display: grid; grid-template-columns: minmax(0, 1fr) minmax(100px, .4fr); gap: 8px; }
+.topic-value-entry { margin-bottom: 12px; }
+.bank-save-bar.has-changes #bankEditStatus { color: #865018; font-weight: 600; }
 .phrase-edit-row { position: relative; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 8px; align-items: start; margin: 8px 0; }
 .phrase-grip { display: flex; align-items: center; justify-content: center; width: 28px; min-height: 44px; padding: 0; border: 0; border-radius: 4px; background: transparent; color: var(--muted); cursor: grab; touch-action: none; user-select: none; }
 .phrase-grip:hover:not(:disabled) { color: var(--plum); background: var(--plum-tint); }
@@ -253,6 +257,9 @@ dialog::backdrop { background: #23172b80; }
 @media (min-width: 1100px) { .comment-column { position: sticky; top: 24px; } }
 @media (max-width: 1100px) { .notice { margin-inline: -28px; } .app { padding: 0 28px; } main { margin-inline: -28px; } .app-header { margin: 0 -28px; padding: 18px 28px; } .main-nav { margin: 0 -28px; padding: 0 28px; } .workspace { padding: 24px; gap: 24px; } .comment-column { padding-left: 24px; } }
 @media (max-width: 800px) {
+  .app-header { flex-wrap: wrap; gap: 2px; }
+  .storage-help, .storage-help[open] { flex: 1 0 100%; }
+  .storage-help summary { text-align: left; }
   .bank-list-columns { display: none; }
   .bank-topic-row { grid-template-columns: 28px minmax(0, 1fr) 64px; gap: 2px 10px; padding: 12px 0; }
   .bank-topic-row > .phrase-grip { grid-column: 1; grid-row: 1 / 3; }
@@ -309,7 +316,8 @@ dialog::backdrop { background: #23172b80; }
   <a class="skip-link" href="#main">Skip to comments</a>
   <div class="app">
     <header class="app-header">
-      <div><h1>Report Card Comment Builder</h1><p id="saveStatus" role="status" hidden></p></div>
+      <h1>Report Card Comment Builder</h1>
+      <details class="storage-help"><summary><span id="saveStatus" role="status">Student work saves automatically</span></summary><p>Comments, selections, values, and student details stay in this browser after you close it or turn off your computer. Return to this site in the same browser and profile—no import needed.</p><p>Use a regular window, not private browsing. Export a class backup from Class overview to move your work or protect against cleared browser data. Work is not synced between devices.</p><p>Phrase-bank edits need <strong>Save bank</strong> before you leave.</p></details>
     </header>
     <nav class="main-nav" aria-label="Main navigation">
       <button class="nav-link active" data-view="write" aria-current="page">Write comments</button>
@@ -363,7 +371,7 @@ dialog::backdrop { background: #23172b80; }
         <div id="rosterPanel" role="region" aria-label="Student roster" tabindex="0"><div id="rosterList"></div></div>
       </section>
       <section id="bankView" aria-labelledby="bankHeading" hidden>
-        <div class="page-heading bank-heading"><h2 id="bankHeading">Phrase bank</h2><div class="actions"><button id="exportBank" class="button">Export bank</button><button id="importBank" class="button">Import bank</button><button id="addCategory" class="button primary">Add topic</button></div></div>
+        <div class="page-heading bank-heading"><h2 id="bankHeading">Phrase bank</h2><div class="actions"><button id="loadDefaultBank" class="text-button">Load default bank</button><button id="exportBank" class="button">Export bank</button><button id="importBank" class="button">Import bank</button><button id="addCategory" class="button primary">Add topic</button></div></div>
         <input id="bankFile" class="visually-hidden" type="file" accept=".json,application/json" aria-label="Choose a phrase bank file" tabindex="-1">
         <p id="bankFileError" class="inline-warning" role="alert" hidden></p>
         <section id="bankImportPreview" class="bank-import-preview" aria-label="Bank import preview" hidden></section>
@@ -387,8 +395,8 @@ dialog::backdrop { background: #23172b80; }
             <div class="field number-setting"><label for="valueMax">Maximum</label><input id="valueMax" type="number" step="any" placeholder="None"></div>
           </div>
           </section>
-          <div class="bank-definition-heading"><h3 id="bankDefinitionHeading">Phrases</h3><details class="token-help"><summary>Phrase tokens</summary><p class="helper tokens"><code>[FullName]</code> <code>[PrefName]</code> <code>[HeShe]</code> <code>[HeSheThey]</code> <code>[HisHerTheir]</code> <code>[HimHerThem]</code> <code>[Value]</code> <span>[Score] also works in older phrases.</span></p></details></div>
-          <div class="field value-template"><label for="valuePhrase" class="visually-hidden">Matching phrase</label><textarea id="valuePhrase" rows="1" maxlength="10000" placeholder="[HeShe] has a Fluency score of [Value]%."></textarea><p class="helper">Use [Value] where the entry belongs. Leave a student's entry blank to skip it.</p></div>
+          <div class="bank-definition-heading"><h3 id="bankDefinitionHeading">Phrases</h3><details class="token-help"><summary>Phrase tokens</summary><p class="helper tokens"><code>[FullName]</code> <code>[PrefName]</code> <code>[HeShe]</code> <code>[HeSheThey]</code> <code>[HisHerTheir]</code> <code>[HimHerThem]</code> <code>[Value]</code></p></details></div>
+          <p id="valuePhraseHelp" class="helper" hidden>Choose a matching phrase for each student. Use [Value] wherever their entry should appear. Blank entries skip this topic.</p>
           <div id="phraseEditor"></div>
           <p id="phraseOrderHelp" class="visually-hidden">Drag a phrase handle to reorder. With the handle focused, use Up or Down arrow keys to move the phrase. Press Escape to cancel a drag. Save the bank to keep changes.</p>
           <p id="phraseOrderAnnouncement" class="visually-hidden" role="status"></p>
@@ -403,7 +411,7 @@ dialog::backdrop { background: #23172b80; }
   <dialog id="categoryDialog" aria-labelledby="categoryDialogHeading"><form id="categoryForm"><h2 id="categoryDialogHeading">Add topic</h2><div class="field"><label for="newCategoryName">Topic name</label><input id="newCategoryName" maxlength="100" required placeholder="For example, Writing"></div><p id="categoryError" role="alert" class="inline-warning" hidden></p><div class="actions"><button type="button" id="cancelCategory" class="button">Cancel</button><button class="button primary">Add topic</button></div></form></dialog>
   <div id="toast" class="toast" role="status" hidden></div>
   <noscript>This app needs JavaScript enabled to build and save comments.</noscript>
-  <script>const INITIAL_DATA = {"students":[{"row":5,"fullName":"Addyson Martinez","prefName":"Addy","pronoun":"She/Her","fluencyScore":60,"status":"Done"},{"row":6,"fullName":"Salman Khan","prefName":"Salman","pronoun":"He/Him","fluencyScore":100,"status":"Done"},{"row":7,"fullName":"Jordan Lee","prefName":"Jordan","pronoun":"He/Him","fluencyScore":35,"status":"Draft"},{"row":99,"fullName":"","prefName":"","pronoun":"She/Her","fluencyScore":"","status":"Not started"}],"categories":{"Beginning":[{"label":"1. … had a strong first trimester in math and social studies!","phrase":"[FullName] had a strong first trimester in math and social studies!"},{"label":"2. … had a solid start to the school year in fifth grade!","phrase":"[FullName] had a solid start to the school year in fifth grade!"},{"label":"3. … had a decent start to the school year in fifth grade!","phrase":"[FullName] had a decent start to the school year in fifth grade!"},{"label":"4. … had an inconsistent first trimester in math and social studies.","phrase":"[FullName] had an inconsistent first trimester in math and social studies."},{"label":"5. … has struggled academically this first trimester.","phrase":"[FullName] has struggled academically this first trimester."}],"Responsibility":[{"label":"1. … consistently follows school rules and expectations and relia...","phrase":"[PrefName] consistently follows school rules and expectations and reliably completes and submits assignments on time."},{"label":"2. … follows school rules and expectations and completes and subm...","phrase":"[PrefName] follows school rules and expectations and completes and submits assignments on time."},{"label":"3. … generally follows school rules but sometimes needs reminders...","phrase":"[PrefName] generally follows school rules but sometimes needs reminders to complete and submit classwork on time."},{"label":"4. … struggles to consistently follow school rules and expectatio...","phrase":"[PrefName] struggles to consistently follow school rules and expectations and does not regularly complete or submit assignments on time."}],"Organization":[{"label":"1. … demonstrates strong organizational skills and independently ...","phrase":"[HeShe] demonstrates strong organizational skills and independently manages materials effectively."},{"label":"2. … shows good organizational skills and manages materials effec...","phrase":"[HeShe] shows good organizational skills and manages materials effectively."},{"label":"3. … is developing organizational skills and sometimes needs remi...","phrase":"[HeShe] is developing organizational skills and sometimes needs reminders to manage materials effectively."},{"label":"4. … struggles with organization and often needs support to manag...","phrase":"[HeShe] struggles with organization and often needs support to manage materials."}],"Self-Control":[{"label":"1. … demonstrates strong self-awareness and effectively uses stra...","phrase":"[PrefName] demonstrates strong self-awareness and effectively uses strategies to manage feelings, thoughts, and behaviors."},{"label":"2. … is developing self-awareness and is learning to use strategi...","phrase":"[PrefName] is developing self-awareness and is learning to use strategies to manage feelings, thoughts, and behaviors."},{"label":"3. … is working on self-awareness and benefits from support when ...","phrase":"[PrefName] is working on self-awareness and benefits from support when managing feelings, thoughts, and behaviors."},{"label":"4. … has difficulty with self-awareness and frequently needs adul...","phrase":"[PrefName] has difficulty with self-awareness and frequently needs adult support to manage feelings, thoughts, and behaviors."}],"Collaboration":[{"label":"1. … regularly communicates respectfully with peers and adults an...","phrase":"[HeShe] regularly communicates respectfully with peers and adults and contributes positively in group settings."},{"label":"2. … is working toward regularly communicating respectfully with ...","phrase":"[HeShe] is working toward regularly communicating respectfully with peers and adults."},{"label":"3. … prefers to work independently and is still developing comfor...","phrase":"[HeShe] prefers to work independently and is still developing comfort collaborating in group settings."},{"label":"4. … needs support to communicate respectfully and participate pr...","phrase":"[HeShe] needs support to communicate respectfully and participate productively with peers."}],"Initiative":[{"label":"1. … initiates tasks independently, puts forth strong effort, and...","phrase":"[PrefName] initiates tasks independently, puts forth strong effort, and is willing to take academic risks."},{"label":"2. … puts a great deal of effort into assignments and is willing ...","phrase":"[PrefName] puts a great deal of effort into assignments and is willing to take risks."},{"label":"3. … puts effort into assignments and is beginning to take academ...","phrase":"[PrefName] puts effort into assignments and is beginning to take academic risks."},{"label":"4. … struggles to initiate tasks independently and often needs pr...","phrase":"[PrefName] struggles to initiate tasks independently and often needs prompting to get started."}],"Independent Work":[{"label":"1. … uses class time appropriately to complete tasks and follows ...","phrase":"[HeShe] uses class time appropriately to complete tasks and follows directions with minimal supervision."},{"label":"2. … generally uses class time well and follows directions, thoug...","phrase":"[HeShe] generally uses class time well and follows directions, though occasional check-ins are helpful."},{"label":"3. … does not always use class time appropriately and sometimes r...","phrase":"[HeShe] does not always use class time appropriately and sometimes requires supervision to remain on task."},{"label":"4. … frequently needs adult support to stay on task and complete ...","phrase":"[HeShe] frequently needs adult support to stay on task and complete work during independent time."}],"Fluency":[{"label":"1. … has mastered our end-of-year goal of division fact fluency! ...","phrase":"[PrefName] has mastered our end-of-year goal of division fact fluency! Way to go, [PrefName]!"},{"label":"2. … is making progress toward multiplication or division math fa...","phrase":"[PrefName] is making progress toward multiplication or division math fact fluency and automaticity with a current score of [Score]%. Our goal is to be division fact fluent by year’s end."},{"label":"3. … is experiencing difficulty with math fact fluency and automa...","phrase":"[PrefName] is experiencing difficulty with math fact fluency and automaticity and should practice more than the required three times per week."}],"All Math Concepts":[{"label":"1. … has mastered both multi-digit multiplication and traditional...","phrase":"[HeShe] has mastered both multi-digit multiplication and traditional long division concepts as well as area and volume concepts."},{"label":"2. … independently demonstrates understanding of both multi-digit...","phrase":"[HeShe] independently demonstrates understanding of both multi-digit multiplication and traditional long division concepts as well as area and volume concepts."},{"label":"3. … demonstrates understanding of multi-digit multiplication, lo...","phrase":"[HeShe] demonstrates understanding of multi-digit multiplication, long division, area, and volume concepts with support."},{"label":"4. … struggles to demonstrate understanding of multi-digit multip...","phrase":"[HeShe] struggles to demonstrate understanding of multi-digit multiplication, long division, area, and volume concepts, even with support."}],"Multi-digit Mult.":[{"label":"1. … has mastered multi-digit multiplication concepts.","phrase":"[PrefName] has mastered multi-digit multiplication concepts."},{"label":"2. … independently demonstrates understanding of multi-digit mult...","phrase":"[PrefName] independently demonstrates understanding of multi-digit multiplication concepts."},{"label":"3. … demonstrates understanding of multi-digit multiplication con...","phrase":"[PrefName] demonstrates understanding of multi-digit multiplication concepts with support."},{"label":"4. … struggles to demonstrate understanding of multi-digit multip...","phrase":"[PrefName] struggles to demonstrate understanding of multi-digit multiplication concepts, even with support."}],"Long Division":[{"label":"1. … has mastered traditional long division concepts.","phrase":"[HeShe] has mastered traditional long division concepts."},{"label":"2. … independently demonstrates understanding of traditional long...","phrase":"[HeShe] independently demonstrates understanding of traditional long division concepts."},{"label":"3. … demonstrates understanding of traditional long division conc...","phrase":"[HeShe] demonstrates understanding of traditional long division concepts with support."},{"label":"4. … struggles to demonstrate understanding of traditional long d...","phrase":"[HeShe] struggles to demonstrate understanding of traditional long division concepts, even with support."}],"Area":[{"label":"1. … has mastered area concepts.","phrase":"[PrefName] has mastered area concepts."},{"label":"2. … independently demonstrates understanding of area concepts.","phrase":"[PrefName] independently demonstrates understanding of area concepts."},{"label":"3. … demonstrates understanding of area concepts with support.","phrase":"[PrefName] demonstrates understanding of area concepts with support."},{"label":"4. … struggles to demonstrate understanding of area concepts, eve...","phrase":"[PrefName] struggles to demonstrate understanding of area concepts, even with support."}],"Volume":[{"label":"1. … has mastered volume concepts.","phrase":"[HeShe] has mastered volume concepts."},{"label":"2. … independently demonstrates understanding of volume concepts.","phrase":"[HeShe] independently demonstrates understanding of volume concepts."},{"label":"3. … demonstrates understanding of volume concepts with support.","phrase":"[HeShe] demonstrates understanding of volume concepts with support."},{"label":"4. … struggles to demonstrate understanding of volume concepts, e...","phrase":"[HeShe] struggles to demonstrate understanding of volume concepts, even with support."}],"ELA (placeholder)":[{"label":"1. … is meeting grade-level expectations in reading and writing. ...","phrase":"[PrefName] is meeting grade-level expectations in reading and writing. (Replace with your own ELA phrases)"},{"label":"2. … is progressing toward grade-level expectations in reading an...","phrase":"[PrefName] is progressing toward grade-level expectations in reading and writing with support. (Replace with your own ELA phrases)"},{"label":"3. … is working below grade-level expectations in reading and wri...","phrase":"[PrefName] is working below grade-level expectations in reading and writing and needs continued support. (Replace with your own ELA phrases)"}],"Social Studies (ph)":[{"label":"1. … demonstrates strong understanding of social studies concepts...","phrase":"[HeShe] demonstrates strong understanding of social studies concepts and participates thoughtfully in discussions. (Replace with your own SS phrases)"},{"label":"2. … is developing understanding of social studies concepts and b...","phrase":"[HeShe] is developing understanding of social studies concepts and benefits from support. (Replace with your own SS phrases)"},{"label":"3. … needs additional support to grasp key social studies concept...","phrase":"[HeShe] needs additional support to grasp key social studies concepts. (Replace with your own SS phrases)"}],"Ending":[{"label":"1. I am very proud of you, …! Keep up the great work!","phrase":"I am very proud of you, [PrefName]! Keep up the great work!"},{"label":"2. I am proud of your progress this trimester, …! Keep working hard!","phrase":"I am proud of your progress this trimester, [PrefName]! Keep working hard!"},{"label":"3. Keep working hard, …, and giving your best! You CAN do it! I b...","phrase":"Keep working hard, [PrefName], and giving your best! You CAN do it! I believe in YOU!"}]},"categoryOrder":["Beginning","Responsibility","Organization","Self-Control","Collaboration","Initiative","Independent Work","Fluency","All Math Concepts","Multi-digit Mult.","Long Division","Area","Volume","ELA (placeholder)","Social Studies (ph)","Ending"]};
+  <script>const INITIAL_DATA = {"students":[{"row":5,"fullName":"Addyson Martinez","prefName":"Addy","pronoun":"She/Her","fluencyScore":60,"status":"Done"},{"row":6,"fullName":"Salman Khan","prefName":"Salman","pronoun":"He/Him","fluencyScore":100,"status":"Done"},{"row":7,"fullName":"Jordan Lee","prefName":"Jordan","pronoun":"He/Him","fluencyScore":35,"status":"Draft"},{"row":99,"fullName":"","prefName":"","pronoun":"She/Her","fluencyScore":"","status":"Not started"}],"categories":{"Beginning":[{"label":"1. … had a strong first trimester in math and social studies!","phrase":"[FullName] had an excellent first trimester of 5th grade!"},{"label":"2. … had a solid start to the school year in fifth grade!","phrase":"[FullName] had a solid first trimester of 5th grade!"},{"label":"3. … had a decent start to the school year in fifth grade!","phrase":"[FullName] has had a good start to fifth grade, with some successes and some opportunities for growth."},{"label":"4. … had an inconsistent first trimester in math and social studies.","phrase":"[FullName] has had a somewhat inconsistent first trimester, with both successes and challenges."},{"label":"5. … has struggled academically this first trimester.","phrase":"[FullName] has struggled academically this first trimester."}],"Focus, Following Directions & Work Habits":[{"label":"1. … consistently follows school rules and expectations and relia...","phrase":"[PrefName] is a hardworking, responsible student who stays focused, works independently, and consistently makes the most of learning time."},{"label":"2. … follows school rules and expectations and completes and subm...","phrase":"[PrefName] follows directions, stays on task, uses class time wisely, and consistently puts forth good effort."},{"label":"3. … generally follows school rules but sometimes needs reminders...","phrase":"[PrefName] meets most classroom expectations but occasionally needs reminders to stay focused, stay organized, and complete work on time."},{"label":"4. … struggles to consistently follow school rules and expectatio...","phrase":"[PrefName] is working on developing better work habits and often needs reminders to stay focused, follow directions, and complete assignments."},{"label":"","phrase":"[PrefName] needs frequent reminders and support to follow directions, stay focused, and complete and submit assignments on time."}],"Organization":[{"label":"1. … demonstrates strong organizational skills and independently ...","phrase":"[HeShe] demonstrates strong organizational skills and independently manages materials effectively."},{"label":"2. … shows good organizational skills and manages materials effec...","phrase":"[HeShe] shows good organizational skills and manages materials effectively."},{"label":"3. … is developing organizational skills and sometimes needs remi...","phrase":"[HeShe] is developing organizational skills and sometimes needs reminders to manage materials effectively."},{"label":"4. … struggles with organization and often needs support to manag...","phrase":"[HeShe] struggles with organization and often needs support to manage materials."}],"Collaboration":[{"label":"1. … regularly communicates respectfully with peers and adults an...","phrase":"[HeShe] eagerly participates in class discussions, shares ideas, takes academic risks, and works wonderfully with others."},{"label":"2. … is working toward regularly communicating respectfully with ...","phrase":"[HeShe] regularly participates, shares ideas, and works well with partners and classmates."},{"label":"3. … prefers to work independently and is still developing comfor...","phrase":"[HeShe] participates in class activities and works well with others but could share ideas more often."},{"label":"4. … needs support to communicate respectfully and participate pr...","phrase":"[HeShe] is working on becoming a more active participant and staying engaged when working with others."},{"label":"","phrase":"[HeShe] needs encouragement to participate in discussions, share ideas, and work cooperatively with classmates."}],"Initiative & Independent Work":[{"label":"1. … initiates tasks independently, puts forth strong effort, and...","phrase":"[PrefName] takes initiative, gets started independently, puts forth great effort, and makes the most of class time."},{"label":"2. … puts a great deal of effort into assignments and is willing ...","phrase":"[PrefName] gets started on tasks independently, follows directions, and uses class time wisely to complete assignments."},{"label":"3. … puts effort into assignments and is beginning to take academ...","phrase":"[PrefName] puts effort into assignments and usually works independently but occasionally needs reminders to get started or stay on task."},{"label":"4. … struggles to initiate tasks independently and often needs pr...","phrase":"[PrefName] sometimes struggles to get started independently and needs reminders to stay focused and use class time wisely."},{"label":"","phrase":"[PrefName] often needs support to get started, stay on task, and use class time productively."}],"Fact Fluency":[{"label":"1. … has mastered our end-of-year goal of division fact fluency! ...","phrase":"[PrefName] has mastered our end-of-year goal of division fact fluency! Way to go, [PrefName]!"},{"label":"2. … is making progress toward multiplication or division math fa...","phrase":"[PrefName] is making progress toward multiplication math fact fluency and automaticity with a current score of [Value]%. Our goal is to be division fact fluent by year’s end."},{"label":"","phrase":"[PrefName] is making progress toward division math fact fluency and automaticity with a current score of [Value]%. Our goal is to be division fact fluent by year’s end."},{"label":"3. … is experiencing difficulty with math fact fluency and automa...","phrase":"[PrefName] is experiencing difficulty with math fact fluency and automaticity and should practice more than the required three times per week."}],"All Trimester 1 Math Concepts":[{"label":"1. … has mastered both multi-digit multiplication and traditional...","phrase":"[HeShe] has mastered both multi-digit multiplication and traditional long division concepts as well as area and volume concepts."},{"label":"2. … independently demonstrates understanding of both multi-digit...","phrase":"[HeShe] independently demonstrates understanding of both multi-digit multiplication and traditional long division concepts as well as area and volume concepts."},{"label":"3. … demonstrates understanding of multi-digit multiplication, lo...","phrase":"[HeShe] demonstrates understanding of multi-digit multiplication, long division, area, and volume concepts with support."},{"label":"4. … struggles to demonstrate understanding of multi-digit multip...","phrase":"[HeShe] struggles to demonstrate understanding of multi-digit multiplication, long division, area, and volume concepts, even with support."}],"Multi-digit Mult.":[{"label":"1. … has mastered multi-digit multiplication concepts.","phrase":"[PrefName] has mastered multi-digit multiplication concepts."},{"label":"2. … independently demonstrates understanding of multi-digit mult...","phrase":"[PrefName] independently demonstrates understanding of multi-digit multiplication concepts."},{"label":"3. … demonstrates understanding of multi-digit multiplication con...","phrase":"[PrefName] demonstrates understanding of multi-digit multiplication concepts with support."},{"label":"4. … struggles to demonstrate understanding of multi-digit multip...","phrase":"[PrefName] struggles to demonstrate understanding of multi-digit multiplication concepts, even with support."}],"Long Division":[{"label":"1. … has mastered traditional long division concepts.","phrase":"[HeShe] has mastered traditional long division concepts."},{"label":"2. … independently demonstrates understanding of traditional long...","phrase":"[HeShe] independently demonstrates understanding of traditional long division concepts."},{"label":"3. … demonstrates understanding of traditional long division conc...","phrase":"[HeShe] demonstrates understanding of traditional long division concepts with support."},{"label":"4. … struggles to demonstrate understanding of traditional long d...","phrase":"[HeShe] struggles to demonstrate understanding of traditional long division concepts, even with support."}],"Area":[{"label":"1. … has mastered area concepts.","phrase":"[PrefName] has mastered area concepts."},{"label":"2. … independently demonstrates understanding of area concepts.","phrase":"[PrefName] independently demonstrates understanding of area concepts."},{"label":"3. … demonstrates understanding of area concepts with support.","phrase":"[PrefName] demonstrates understanding of area concepts with support."},{"label":"4. … struggles to demonstrate understanding of area concepts, eve...","phrase":"[PrefName] struggles to demonstrate understanding of area concepts, even with support."}],"Volume":[{"label":"1. … has mastered volume concepts.","phrase":"[HeShe] has mastered volume concepts."},{"label":"2. … independently demonstrates understanding of volume concepts.","phrase":"[HeShe] independently demonstrates understanding of volume concepts."},{"label":"3. … demonstrates understanding of volume concepts with support.","phrase":"[HeShe] demonstrates understanding of volume concepts with support."},{"label":"4. … struggles to demonstrate understanding of volume concepts, e...","phrase":"[HeShe] struggles to demonstrate understanding of volume concepts, even with support."}],"ELA":[{"label":"1. … is meeting grade-level expectations in reading and writing. ...","phrase":"[PrefName] mastered trimester goals."},{"label":"2. … is progressing toward grade-level expectations in reading an...","phrase":"[PrefName] met trimester goals."},{"label":"3. … is working below grade-level expectations in reading and wri...","phrase":"[PrefName] made progress toward trimester goals with additional adult support."},{"label":"","phrase":"[PrefName] struggled to reach trimester goals, even with support."}],"Social Studies":[{"label":"1. … demonstrates strong understanding of social studies concepts...","phrase":"[HeShe] mastered trimester goals."},{"label":"2. … is developing understanding of social studies concepts and b...","phrase":"[HeShe] met trimester goals."},{"label":"3. … needs additional support to grasp key social studies concept...","phrase":"[HeShe] made progress toward trimester goals with additional adult support."},{"label":"","phrase":"[HeShe] struggled to reach trimester goals, even with support."}],"Ending":[{"label":"1. I am very proud of you, …! Keep up the great work!","phrase":"You should be proud of the hard work and effort you've put in, [PrefName]! Keep up the great work!"},{"label":"2. I am proud of your progress this trimester, …! Keep working hard!","phrase":"You should be proud of your progress this trimester, [PrefName]! Keep working hard!"},{"label":"3. Keep working hard, …, and giving your best! You CAN do it! I b...","phrase":"Keep working hard, [PrefName], and giving your best! You CAN do it! I believe in YOU!"}]},"categoryOrder":["Beginning","Focus, Following Directions & Work Habits","Organization","Collaboration","Initiative & Independent Work","Fact Fluency","All Trimester 1 Math Concepts","Multi-digit Mult.","Long Division","Area","Volume","ELA","Social Studies","Ending"],"topicSettings":{"Beginning":{"type":"selection","valueLabel":"Beginning","valueType":"number","unit":"","min":"","max":"","phrase":"[PrefName] has a value of [Value].","phrases":[]},"Focus, Following Directions & Work Habits":{"type":"selection","valueLabel":"Focus, Following Directions & Work Habits","valueType":"number","unit":"","min":"","max":"","phrase":"[PrefName] has a value of [Value].","phrases":[]},"Organization":{"type":"selection","valueLabel":"Organization","valueType":"number","unit":"","min":"","max":"","phrase":"[PrefName] has a value of [Value].","phrases":[]},"Collaboration":{"type":"selection","valueLabel":"Collaboration","valueType":"number","unit":"","min":"","max":"","phrase":"[PrefName] has a value of [Value].","phrases":[]},"Initiative & Independent Work":{"type":"selection","valueLabel":"Initiative & Independent Work","valueType":"number","unit":"","min":"","max":"","phrase":"[PrefName] has a value of [Value].","phrases":[]},"Fact Fluency":{"type":"selection","valueLabel":"Fact Fluency","valueType":"text","unit":"%","min":0,"max":100,"phrase":"[HeShe] has a Fluency score of [Value]%.","phrases":[]},"All Trimester 1 Math Concepts":{"type":"selection","valueLabel":"All Trimester 1 Math Concepts","valueType":"number","unit":"","min":"","max":"","phrase":"[PrefName] has a value of [Value].","phrases":[]},"Multi-digit Mult.":{"type":"selection","valueLabel":"Multi-digit Mult.","valueType":"number","unit":"","min":"","max":"","phrase":"[PrefName] has a value of [Value].","phrases":[]},"Long Division":{"type":"selection","valueLabel":"Long Division","valueType":"number","unit":"","min":"","max":"","phrase":"[PrefName] has a value of [Value].","phrases":[]},"Area":{"type":"selection","valueLabel":"Area","valueType":"number","unit":"","min":"","max":"","phrase":"[PrefName] has a value of [Value].","phrases":[]},"Volume":{"type":"selection","valueLabel":"Volume","valueType":"number","unit":"","min":"","max":"","phrase":"[PrefName] has a value of [Value].","phrases":[]},"ELA":{"type":"selection","valueLabel":"ELA","valueType":"number","unit":"","min":"","max":"","phrase":"[PrefName] has a value of [Value].","phrases":[]},"Social Studies":{"type":"selection","valueLabel":"Social Studies","valueType":"number","unit":"","min":"","max":"","phrase":"[PrefName] has a value of [Value].","phrases":[]},"Ending":{"type":"selection","valueLabel":"Ending","valueType":"number","unit":"","min":"","max":"","phrase":"[PrefName] has a value of [Value].","phrases":[]}}};
 /* Pure data functions, shared by the standalone app and its tests. */
 const Core = (() => {
   const statuses = ['Not started', 'Draft', 'Done'];
@@ -412,6 +420,16 @@ const Core = (() => {
   const object = value => value && typeof value === 'object' && !Array.isArray(value);
   const text = (value, max = 20000) => typeof value === 'string' ? value.slice(0, max) : '';
   const validPronouns = value => typeof value === 'string' && /^[\p{L}][\p{L}'’-]{0,28}\/[\p{L}][\p{L}'’-]{0,28}$/u.test(value.trim());
+  const normalizePhrase = phrase => String(phrase ?? '').replace(/\[\s*(?:Score|value)\s*\]/gi, '[Value]').replace(/\[(FullName|PrefName|HeShe|HeSheThey|HisHerTheir|HimHerThem|he\/she)\s+\](?=\S)/g, '[$1] ').replace(/\[\s*(FullName|PrefName|HeShe|HeSheThey|HisHerTheir|HimHerThem|he\/she)\s*\]/g, '[$1]');
+  const valuePhrases = config => Array.isArray(config?.phrases) ? config.phrases : [{label:'', phrase:normalizePhrase(config?.phrase || '')}];
+  function phraseOptions(opts) {
+    if (!Array.isArray(opts) || opts.length > 100) throw new Error('Each topic can contain at most 100 phrases.');
+    return opts.map(opt => {
+      if (typeof opt === 'string') opt = {phrase:opt};
+      if (!object(opt) || typeof opt.phrase !== 'string' || opt.phrase.length > 10000) throw new Error('Each phrase needs valid phrase text.');
+      return {label:normalizePhrase(text(opt.label, 300)), phrase:normalizePhrase(opt.phrase)};
+    });
+  }
   const identity = s => [s.fullName, s.prefName, s.pronoun].map(v => String(v || '').trim().toLowerCase()).join('|');
   const legacyId = s => {
     let hash = 2166136261;
@@ -422,10 +440,10 @@ const Core = (() => {
     if (!object(raw) || typeof raw.fullName !== 'string') throw new Error('Each student needs a fullName text field.');
     const score = raw.fluencyScore;
     if (score !== '' && score != null && (!Number.isFinite(Number(score)) || Number(score) < 0 || Number(score) > 100)) {
-      throw new Error('Fluency scores must be between 0 and 100.');
+      throw new Error('Fluency values must be between 0 and 100.');
     }
     const selections = object(raw.selections)
-      ? Object.fromEntries(Object.entries(raw.selections).filter(([,v]) => typeof v === 'string' || Number.isInteger(v))) : {};
+      ? Object.fromEntries(Object.entries(raw.selections).filter(([,v]) => typeof v === 'string' || Number.isInteger(v)).map(([cat,v]) => [cat, typeof v === 'string' ? normalizePhrase(v) : v])) : {};
     return {
       id: text(raw.id, 200) || legacyId(raw), fullName: text(raw.fullName, 200).trim(),
       prefName: text(raw.prefName, 200).trim(), pronoun: validPronouns(raw.pronoun) ? raw.pronoun.trim() : 'She/Her',
@@ -441,10 +459,7 @@ const Core = (() => {
     const entries = Object.entries(raw).map(([cat, opts]) => {
       if (!cat.trim() || cat.length > 100 || ['__proto__', 'constructor', 'prototype'].includes(cat)) throw new Error('That category name cannot be used.');
       if (!Array.isArray(opts) || opts.length > 100) throw new Error('Each category must contain a list of at most 100 phrases.');
-      return [cat, opts.map(opt => {
-        if (!object(opt) || typeof opt.phrase !== 'string' || opt.phrase.length > 10000) throw new Error('Each phrase needs a valid phrase text field.');
-        return { label: text(opt.label, 300), phrase: opt.phrase };
-      })];
+      return [cat, phraseOptions(opts)];
     });
     const categories = Object.fromEntries(entries);
     const categoryOrder = [...new Set([...(Array.isArray(order) ? order.filter(c => typeof c === 'string' && own(categories, c)) : []), ...Object.keys(categories)])];
@@ -454,13 +469,16 @@ const Core = (() => {
       const min = config.min === '' || config.min == null ? '' : Number(config.min);
       const max = config.max === '' || config.max == null ? '' : Number(config.max);
       if (min !== '' && !Number.isFinite(min) || max !== '' && !Number.isFinite(max) || min !== '' && max !== '' && min > max) throw new Error('Enter valid minimum and maximum values.');
+      const phrase = normalizePhrase(text(config.phrase, 10000)) || (legacyFluency ? '[HeShe] has a Fluency score of [Value]%.' : '[PrefName] has a value of [Value].');
+      const phrases = own(config, 'phrases') ? phraseOptions(config.phrases) : config.type === 'value' || legacyFluency ? [{label:'', phrase}] : [];
       return [cat, {
         type: config.type === 'value' || legacyFluency ? 'value' : 'selection',
         valueLabel: cat,
         valueType: config.valueType === 'text' ? 'text' : 'number',
         unit: text(config.unit, 30) || (legacyFluency ? '%' : ''),
         min: legacyFluency ? 0 : min, max: legacyFluency ? 100 : max,
-        phrase: text(config.phrase, 10000) || (legacyFluency ? '[HeShe] has a Fluency score of [Value]%.' : '[PrefName] has a value of [Value].')
+        phrase: phrases[0]?.phrase || phrase,
+        phrases
       }];
     }));
     return { categories, categoryOrder, topicSettings };
@@ -480,12 +498,19 @@ const Core = (() => {
       s.selections = Object.fromEntries(Object.entries(s.selections).flatMap(([cat, selected]) => {
         const opts = own(b.categories, cat) ? b.categories[cat] : [];
         const phrase = typeof selected === 'number' || /^\d+$/.test(selected) ? opts[Number(selected)]?.phrase : selected;
-        return opts.some(o => o.phrase === phrase) || b.topicSettings[cat]?.type === 'value' && phrase === b.topicSettings[cat].phrase ? [[cat, phrase]] : [];
+        const config = b.topicSettings[cat];
+        if (config?.type === 'value' && opts.some(o => o.phrase === phrase) && !valuePhrases(config).some(o => o.phrase === phrase)) config.phrases.push({...opts.find(o => o.phrase === phrase)});
+        return opts.some(o => o.phrase === phrase) || b.topicSettings[cat]?.type === 'value' && valuePhrases(b.topicSettings[cat]).some(o => o.phrase === phrase) ? [[cat, phrase]] : [];
       }));
     }
     return { kind: isRoster ? 'roster' : 'backup', className: text(payload.className, 100) || 'My class', students, ...b };
   }
   function personalize(phrase, s, value = s.fluencyScore, unit = '') {
+    phrase = normalizePhrase(phrase);
+    if (unit && typeof value === 'string' && value.trim().toLowerCase().endsWith(unit.trim().toLowerCase())) {
+      const withoutUnit = value.trim().slice(0, -unit.trim().length).trim();
+      if (withoutUnit && Number.isFinite(Number(withoutUnit))) value = withoutUnit;
+    }
     const full = s.fullName.trim() || 'Student';
     const [subject, rawObject] = s.pronoun.toLowerCase().split('/');
     const objectPronoun = rawObject === 'they' && ['she', 'he'].includes(subject) ? (subject === 'she' ? 'her' : 'him') : rawObject;
@@ -528,7 +553,7 @@ const Core = (() => {
   function topicSentence(s, state, cat) {
     const phrase = own(s.selections, cat) ? s.selections[cat] : '';
     const config = state.topicSettings?.[cat];
-    if (!state.categories[cat]?.some(o => o.phrase === phrase) && !(config?.type === 'value' && phrase === config.phrase)) return '';
+    if (!state.categories[cat]?.some(o => o.phrase === phrase) && !(config?.type === 'value' && valuePhrases(config).some(o => o.phrase === phrase))) return '';
     return personalize(phrase, s, topicValue(s, cat), config?.unit);
   }
   function draft(s, state) {
@@ -537,7 +562,7 @@ const Core = (() => {
       return sentence ? [sentence] : [];
     }).join(' ');
   }
-  function needsScore(s, state) { return Object.entries(s.selections).some(([cat, p]) => /\[(Score|Value|value)\]/.test(p) && (topicValue(s, cat) === '' || !!(state && valueError(topicValue(s, cat), state.topicSettings[cat])))); }
+  function needsValue(s, state) { return Object.entries(s.selections).some(([cat, p]) => (/\[(Score|Value|value)\]/.test(p) || state?.topicSettings[cat]?.type === 'value') && (topicValue(s, cat) === '' || !!(state && valueError(topicValue(s, cat), state.topicSettings[cat])))); }
   function roster(state) {
     return {
       version: 2, kind: 'roster', className: state.className, exportedAt: new Date().toISOString(),
@@ -552,7 +577,7 @@ const Core = (() => {
     const result = bank(payload.categories, payload.categoryOrder, payload.topicSettings);
     if (new Set(result.categoryOrder.map(cat => cat.toLowerCase())).size !== result.categoryOrder.length) throw new Error('Each topic needs a unique name, including capitalization.');
     for (const cat of result.categoryOrder) {
-      if (result.topicSettings[cat].type === 'value' && !/\[(Value|value|Score)\]/.test(result.topicSettings[cat].phrase)) throw new Error(`Add [Value] to the matching phrase for ${cat}.`);
+      if (result.topicSettings[cat].type === 'value' && (!result.topicSettings[cat].phrases.length || result.topicSettings[cat].phrases.some(opt => !opt.phrase.trim()))) throw new Error(`Add matching phrase text for ${cat}.`);
     }
     return result;
   }
@@ -578,14 +603,14 @@ const Core = (() => {
     for (const s of state.students) {
       if (s.finalComment.trim()) { existing++; continue; }
       const comment = draft(s, state);
-      if (!s.fullName.trim() || !comment || needsScore(s, state)) { incomplete++; continue; }
+      if (!s.fullName.trim() || !comment || needsValue(s, state)) { incomplete++; continue; }
       s.finalComment = comment;
       s.status = 'Draft';
       generated++;
     }
     return { generated, existing, incomplete };
   }
-  return { student, bank, validate, personalize, draft, needsScore, roster, backup, mergeRoster, generateAll, topicValue, topicSentence, valueError, pronouns, validPronouns, bankFile, exportBank };
+  return { student, bank, validate, personalize, draft, needsValue, needsScore:needsValue, roster, backup, mergeRoster, generateAll, topicValue, topicSentence, valueError, pronouns, validPronouns, bankFile, exportBank, normalizePhrase, valuePhrases };
 })();
 if (typeof module !== 'undefined') module.exports = Core;
 
@@ -594,6 +619,7 @@ const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&
 const STORAGE_KEY = 'report-card-comment-builder-v2';
 const clone = value => JSON.parse(JSON.stringify(value));
 let startupMessage = '';
+let storageAvailable = true;
 let state = Core.validate({ ...INITIAL_DATA, className: 'My class' });
 try {
   const saved = localStorage.getItem(STORAGE_KEY);
@@ -627,14 +653,18 @@ function newStudent() {
 function save() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    $('saveStatus').hidden = true;
-    $('saveStatus').textContent = '';
+    storageAvailable = true;
+    $('saveStatus').textContent = 'Student work saved automatically';
+    $('saveStatus').closest('details').classList.remove('storage-error');
   } catch {
-    $('saveStatus').textContent = 'Device storage is unavailable. Export a backup to keep your work.';
-    $('saveStatus').hidden = false;
+    storageAvailable = false;
+    $('saveStatus').textContent = 'Work is not saved — export a class backup';
+    $('saveStatus').closest('details').classList.add('storage-error');
+    $('saveStatus').closest('details').open = true;
   }
   $('classCount').textContent = state.students.length;
   $('rosterExport').disabled = !state.students.some(s => s.fullName.trim());
+  return storageAvailable;
 }
 function toast(message) {
   clearTimeout(toastTimer);
@@ -700,9 +730,10 @@ function renderWrite() {
   updatePreview();
 }
 function phraseOptions(category, selected) {
-  return `<option value="">Skip this category</option>` + (state.categories[category] || []).map((opt, i) =>
+  return `<option value="">Skip this topic</option>` + topicPhrases(category).map((opt, i) =>
     `<option value="${i}" ${opt.phrase === selected ? 'selected' : ''}>${escapeHTML(`Option ${i + 1}: ${opt.phrase.replace(/\[[^\]]+\]/g, '…')}`)}</option>`).join('');
 }
+function topicPhrases(cat) { return state.topicSettings[cat]?.type === 'value' ? Core.valuePhrases(state.topicSettings[cat]) : state.categories[cat] || []; }
 function valueLabel(topic, config) { return topic + (config.unit ? ` (${config.unit})` : ''); }
 function valueInput(s, cat, id, extra = '') {
   const config = state.topicSettings[cat];
@@ -718,7 +749,7 @@ function setTopicValue(s, cat, input) {
   s.values[cat] = value === '' ? '' : config.valueType === 'number' && Number.isFinite(Number(value)) ? Number(value) : value;
   if (config.type === 'value') {
     if (value === '') delete s.selections[cat];
-    else s.selections[cat] = config.phrase;
+    else if (!Core.valuePhrases(config).some(opt => opt.phrase === s.selections[cat])) s.selections[cat] = Core.valuePhrases(config)[0]?.phrase;
   }
   const error = input.validity.badInput ? 'Enter a number.' : Core.valueError(s.values[cat], config);
   input.setAttribute('aria-invalid', String(!!error));
@@ -731,14 +762,14 @@ function renderCategory() {
   const panel = $('categoryPanel');
   if (!s) { panel.innerHTML = '<p class="empty-state">Add a student to start building comments.</p>'; return; }
   if (!activeCategory) { panel.innerHTML = '<p class="empty-state">Add a topic in the Phrase bank to start building comments.</p>'; return; }
-  const options = state.categories[activeCategory] || [];
+  const options = topicPhrases(activeCategory);
   const config = state.topicSettings[activeCategory];
   const topics = state.categoryOrder;
   const categoryIndex = state.categoryOrder.indexOf(activeCategory);
   panel.innerHTML = `<div class="topic-picker"><div class="field"><div class="topic-label"><label for="topicSelect">Topic</label><span id="topicPosition" class="muted">${categoryIndex + 1} / ${topics.length}</span></div><select id="topicSelect" title="${escapeHTML(activeCategory)}">${topics.map(cat => `<option ${cat === activeCategory ? 'selected' : ''}>${escapeHTML(cat)}</option>`).join('')}</select></div><button id="previousTopic" class="button" aria-label="Previous topic" ${categoryIndex <= 0 ? 'disabled' : ''}>Previous</button><button id="nextTopic" class="button" aria-label="Next topic" ${categoryIndex >= state.categoryOrder.length - 1 ? 'disabled' : ''}>Next</button></div>
-    ${config.type === 'value' ? `<div class="topic-value-entry"><div class="field"><label for="topicValue">${escapeHTML(valueLabel(activeCategory, config))}</label>${valueInput(s, activeCategory, 'topicValue')}</div><button id="skipValue" class="text-button">Skip this topic</button><p id="valuePreview" class="value-preview">${escapeHTML(Core.personalize(s.selections[activeCategory] || config.phrase, s, Core.topicValue(s, activeCategory)))}</p></div>` : `<div class="phrase-options" role="radiogroup" aria-label="${escapeHTML(activeCategory)} phrases">
+    ${config.type === 'value' ? `<div class="topic-value-entry"><div class="field"><label for="topicValue">${escapeHTML(valueLabel(activeCategory, config))}</label>${valueInput(s, activeCategory, 'topicValue')}</div></div>` : ''}<div class="phrase-options" role="radiogroup" aria-label="${escapeHTML(activeCategory)} phrases">
     ${options.map((opt, i) => `<label class="phrase-option ${s.selections[activeCategory] === opt.phrase ? 'chosen' : ''}"><input type="radio" name="phraseChoice" value="${i}" ${s.selections[activeCategory] === opt.phrase ? 'checked' : ''}><span class="phrase-text">${escapeHTML(Core.personalize(opt.phrase, s, Core.topicValue(s, activeCategory), config.unit))}</span></label>`).join('')}
-    <label class="phrase-option ${!s.selections[activeCategory] ? 'chosen' : ''}"><input type="radio" name="phraseChoice" value="" ${!s.selections[activeCategory] ? 'checked' : ''}><span>Skip this topic</span></label></div>`}
+    <label class="phrase-option ${!s.selections[activeCategory] ? 'chosen' : ''}"><input type="radio" name="phraseChoice" value="" ${!s.selections[activeCategory] ? 'checked' : ''}><span>Skip this topic</span></label></div>
     ${config.type !== 'value' && options.some(o => /\[(Score|Value|value)\]/.test(o.phrase)) ? `<div class="field topic-extra-value"><label for="topicValue">${escapeHTML(valueLabel(activeCategory, config))}</label>${valueInput(s, activeCategory, 'topicValue')}</div>` : ''}
     <p id="valueError" class="inline-warning" role="alert" hidden></p>`;
   $('topicSelect').onchange = event => {
@@ -758,7 +789,6 @@ function renderCategory() {
   $('nextTopic').onclick = () => moveTopic(1);
   panel.querySelectorAll('[name="phraseChoice"]').forEach(radio => { radio.onchange = event => choosePhrase(event.target.value); });
   updatePhrasePreviews();
-  if ($('skipValue')) $('skipValue').onclick = () => { $('topicValue').value = ''; $('topicValue').dispatchEvent(new Event('input')); };
   if ($('topicValue')) $('topicValue').oninput = event => {
     const error = setTopicValue(s, activeCategory, event.target);
     $('valueError').textContent = error;
@@ -771,8 +801,10 @@ function renderCategory() {
 function choosePhrase(value) {
   const s = current();
   if (!s) return;
-  if (value === '') delete s.selections[activeCategory];
-  else s.selections[activeCategory] = state.categories[activeCategory][Number(value)].phrase;
+  if (value === '') {
+    delete s.selections[activeCategory];
+    if (state.topicSettings[activeCategory].type === 'value') { s.values[activeCategory] = ''; $('topicValue').value = ''; }
+  } else s.selections[activeCategory] = topicPhrases(activeCategory)[Number(value)].phrase;
   if (s.status === 'Not started' && Object.keys(s.selections).length) s.status = 'Draft';
   document.querySelectorAll('[name="phraseChoice"]').forEach(radio => {
     radio.checked = radio.value === value;
@@ -784,9 +816,12 @@ function choosePhrase(value) {
 }
 function updatePhrasePreviews() {
   if (!current() || !activeCategory) return;
-  const options = state.categories[activeCategory] || [];
+  const options = topicPhrases(activeCategory);
+  $('categoryPanel').querySelectorAll('[name="phraseChoice"]').forEach(radio => {
+    radio.checked = radio.value === '' ? !current().selections[activeCategory] : options[Number(radio.value)]?.phrase === current().selections[activeCategory];
+    radio.closest('label').classList.toggle('chosen', radio.checked);
+  });
   $('categoryPanel').querySelectorAll('.phrase-text').forEach((el, i) => { if (options[i]) el.textContent = Core.personalize(options[i].phrase, current(), Core.topicValue(current(), activeCategory), state.topicSettings[activeCategory].unit); });
-  if ($('valuePreview')) $('valuePreview').textContent = Core.personalize(current().selections[activeCategory] || state.topicSettings[activeCategory].phrase, current(), current().selections[activeCategory] ? Core.topicValue(current(), activeCategory) : '', state.topicSettings[activeCategory].unit);
 }
 function updatePreview() {
   const s = current();
@@ -803,8 +838,8 @@ function updatePreview() {
   $('draftCount').textContent = draft ? `${draft.length} characters` : '';
   const selectedCount = Object.keys(s?.selections || {}).length;
   $('selectionCount').textContent = `${selectedCount} ${selectedCount === 1 ? 'topic' : 'topics'} selected`;
-  $('scoreWarning').hidden = !s || !Core.needsScore(s, state);
-  $('useDraft').disabled = !draft || Core.needsScore(s, state);
+  $('scoreWarning').hidden = !s || !Core.needsValue(s, state);
+  $('useDraft').disabled = !draft || Core.needsValue(s, state);
   $('copyFinal').disabled = !s?.finalComment.trim();
   $('clearFinal').disabled = !s?.finalComment;
   $('markDone').disabled = !s?.finalComment.trim() || !s?.fullName.trim();
@@ -862,7 +897,7 @@ function renderOverview() {
     const comment = category ? Core.topicSentence(s, state, category) : s.finalComment;
     const config = state.topicSettings[category];
     return `<article class="student-row ${category ? 'topic-row' : 'comment-row'}" data-student="${escapeHTML(s.id)}"><h3><button class="student-name" data-open="${escapeHTML(s.id)}" title="${escapeHTML(displayName(s))}" aria-label="Open comment for ${escapeHTML(displayName(s))}">${escapeHTML(displayName(s))}</button></h3><span class="status ${s.status === 'Done' ? 'done' : s.status === 'Draft' ? 'draft' : ''}">${s.status}</span>
-      <div class="row-comment">${category ? config.type === 'value' ? `<label class="visually-hidden" for="overview-value-${escapeHTML(s.id)}">${escapeHTML(valueLabel(category, config))} for ${escapeHTML(displayName(s))}</label>${valueInput(s, category, 'overview-value-' + s.id, `data-overview-value="${escapeHTML(s.id)}"`)}` : `<label class="visually-hidden" for="overview-choice-${escapeHTML(s.id)}">${escapeHTML(category)} phrase for ${escapeHTML(displayName(s))}</label><select id="overview-choice-${escapeHTML(s.id)}" data-choice="${escapeHTML(s.id)}">${phraseOptions(category, selection)}</select>` : `<p class="${comment ? '' : 'muted'}" title="${escapeHTML(comment || 'No final comment yet.')}">${escapeHTML(comment || 'No final comment yet.')}</p>`}</div>
+      <div class="row-comment">${category ? config.type === 'value' ? `<label class="visually-hidden" for="overview-value-${escapeHTML(s.id)}">${escapeHTML(valueLabel(category, config))} for ${escapeHTML(displayName(s))}</label><div class="overview-value-controls"><label class="visually-hidden" for="overview-choice-${escapeHTML(s.id)}">${escapeHTML(category)} matching phrase for ${escapeHTML(displayName(s))}</label><select id="overview-choice-${escapeHTML(s.id)}" data-choice="${escapeHTML(s.id)}">${phraseOptions(category, selection)}</select>${valueInput(s, category, 'overview-value-' + s.id, `data-overview-value="${escapeHTML(s.id)}"`)}</div>` : `<label class="visually-hidden" for="overview-choice-${escapeHTML(s.id)}">${escapeHTML(category)} phrase for ${escapeHTML(displayName(s))}</label><select id="overview-choice-${escapeHTML(s.id)}" data-choice="${escapeHTML(s.id)}">${phraseOptions(category, selection)}</select>` : `<p class="${comment ? '' : 'muted'}" title="${escapeHTML(comment || 'No final comment yet.')}">${escapeHTML(comment || 'No final comment yet.')}</p>`}</div>
       ${category ? '' : `<button class="button row-copy" data-copy-comment="${escapeHTML(s.id)}" aria-label="Copy comment for ${escapeHTML(displayName(s))}" ${s.finalComment.trim() ? '' : 'disabled'}>Copy</button>`}</article>`;
   }).join('') : `<p class="empty-state">${state.students.length ? 'No students match this progress filter.' : 'No students yet.'}</p>`;
   $('overviewList').querySelectorAll('[data-open]').forEach(button => { button.onclick = () => {
@@ -876,8 +911,10 @@ function renderOverview() {
   }; });
   $('overviewList').querySelectorAll('[data-choice]').forEach(select => { select.onchange = () => {
     const s = state.students.find(item => item.id === select.dataset.choice);
-    if (select.value === '') delete s.selections[overviewCategory];
-    else s.selections[overviewCategory] = state.categories[overviewCategory][Number(select.value)].phrase;
+    if (select.value === '') {
+      delete s.selections[overviewCategory];
+      if (state.topicSettings[overviewCategory].type === 'value') s.values[overviewCategory] = '';
+    } else s.selections[overviewCategory] = topicPhrases(overviewCategory)[Number(select.value)].phrase;
     if (s.status === 'Not started' && Object.keys(s.selections).length) s.status = 'Draft';
     save();
     renderOverview();
@@ -888,6 +925,9 @@ function renderOverview() {
     const error = setTopicValue(s, overviewCategory, input);
     input.setCustomValidity(error);
     input.title = error;
+    const select = input.closest('.row-comment').querySelector('[data-choice]');
+    select.value = String(topicPhrases(overviewCategory).findIndex(opt => opt.phrase === s.selections[overviewCategory]));
+    if (!s.selections[overviewCategory]) select.value = '';
     renderClassProgress();
   }; });
 }
@@ -976,7 +1016,8 @@ function openStudentEditor() {
   (input || $('addStudent')).focus();
 }
 function updateBankStatus() {
-  $('bankEditStatus').textContent = bankDirty ? 'Unsaved phrase changes' : 'No unsaved changes';
+  $('bankEditStatus').textContent = bankDirty ? 'Unsaved changes — choose Save bank before leaving' : storageAvailable ? 'Bank saved in this browser' : 'Bank not saved — export a bank or class backup';
+  $('bankEditStatus').closest('.bank-save-bar').classList.toggle('has-changes', bankDirty || !storageAvailable);
   const invalidName = !$('bankTopicName').validity.valid;
   $('saveBank').disabled = !bankDirty || invalidName;
   $('exportBank').disabled = invalidName;
@@ -995,11 +1036,20 @@ function clearBankDrag() {
   if (drag?.handle.hasPointerCapture?.(drag.pointerId)) drag.handle.releasePointerCapture(drag.pointerId);
   $('bankView').querySelectorAll('.phrase-edit-row, .bank-topic-row').forEach(row => row.classList.remove('dragging', 'drop-before', 'drop-after'));
 }
+function activeBankPhrases() {
+  const config = bankDraft.topicSettings[bankCategory];
+  return config.type === 'value' ? config.phrases : bankDraft.categories[bankCategory];
+}
+function syncValuePhrase() {
+  const config = bankDraft.topicSettings[bankCategory];
+  if (config.type === 'value') config.phrase = config.phrases[0]?.phrase || '';
+}
 function movePhrase(from, to) {
-  const phrases = bankDraft.categories[bankCategory];
+  const phrases = activeBankPhrases();
   if (from === to || from < 0 || to < 0 || from >= phrases.length || to >= phrases.length) return;
   const [phrase] = phrases.splice(from, 1);
   phrases.splice(to, 0, phrase);
+  syncValuePhrase();
   bankDirty = true;
   renderBank();
   $('phraseEditor').querySelector(`[data-phrase-handle="${to}"]`).focus({preventScroll:true});
@@ -1055,7 +1105,7 @@ function topicDetails(cat) {
     const count = bankDraft.categories[cat].length;
     return `${count} ${count === 1 ? 'option' : 'options'}`;
   }
-  const parts = [config.valueType === 'text' ? 'Text' : 'Number', config.unit];
+  const parts = [config.valueType === 'text' ? 'Text' : 'Number', config.unit, `${config.phrases.length} ${config.phrases.length === 1 ? 'phrase' : 'phrases'}`];
   if (config.valueType === 'number') {
     if (config.min !== '' && config.max !== '') parts.push(`${config.min}–${config.max}`);
     else if (config.min !== '') parts.push(`Min ${config.min}`);
@@ -1109,29 +1159,34 @@ function renderBank() {
   if (!bankCategory) { updateBankStatus(); return; }
   const config = bankDraft.topicSettings[bankCategory];
   $('topicType').value = config.type;
-  $('bankDefinitionHeading').textContent = config.type === 'value' ? 'Matching phrase' : 'Phrases';
-  const phrases = bankDraft.categories[bankCategory] || [];
-  const usesValue = config.type === 'value' || phrases.some(opt => /\[(Score|Value|value)\]/.test(opt.phrase));
+  const isValue = config.type === 'value';
+  $('bankDefinitionHeading').textContent = isValue ? 'Matching phrases' : 'Phrases';
+  const phrases = activeBankPhrases();
+  const usesValue = isValue || phrases.some(opt => /\[Value\]/.test(opt.phrase));
   $('valueSettings').hidden = !usesValue;
-  $('valuePhrase').closest('.field').hidden = config.type !== 'value';
-  for (const [id, key] of Object.entries({valueType:'valueType',valueUnit:'unit',valueMin:'min',valueMax:'max',valuePhrase:'phrase'})) $(id).value = config[key];
+  $('valuePhraseHelp').hidden = !isValue;
+  for (const [id, key] of Object.entries({valueType:'valueType',valueUnit:'unit',valueMin:'min',valueMax:'max'})) $(id).value = config[key];
   document.querySelectorAll('.number-setting').forEach(field => { field.hidden = config.valueType !== 'number'; });
-  fitPhraseBox($('valuePhrase'));
-  $('phraseEditor').hidden = config.type === 'value';
-  $('addPhrase').hidden = config.type === 'value';
-  $('phraseEditor').innerHTML = phrases.length ? phrases.map((opt, i) => `<div class="phrase-edit-row"><button class="phrase-grip" data-phrase-handle="${i}" data-reorder-index="${i}" aria-label="Reorder phrase ${i + 1}" aria-describedby="phraseOrderHelp" aria-keyshortcuts="ArrowUp ArrowDown" title="Drag to reorder; use Up/Down arrow keys" ${phrases.length < 2 ? 'disabled' : ''}>${reorderGrip}</button><label class="visually-hidden" for="phrase-${i}">Option ${i + 1} phrase</label><textarea id="phrase-${i}" data-index="${i}" rows="1" maxlength="10000">${escapeHTML(opt.phrase)}</textarea><div class="option-actions"><button class="text-button danger" data-remove="${i}" aria-label="Remove option ${i + 1}">Remove</button></div></div>`).join('') : '<p class="empty-state">Add a phrase to this topic.</p>';
+  $('addPhrase').hidden = false;
+  $('addPhrase').textContent = isValue ? 'Add matching phrase' : 'Add phrase';
+  $('phraseEditor').innerHTML = phrases.length ? phrases.map((opt, i) => {
+    const id = isValue ? (i ? `valuePhrase-${i}` : 'valuePhrase') : `phrase-${i}`;
+    return `<div class="field phrase-edit-row"><button class="phrase-grip" data-phrase-handle="${i}" data-reorder-index="${i}" aria-label="Reorder phrase ${i + 1}" aria-describedby="phraseOrderHelp" aria-keyshortcuts="ArrowUp ArrowDown" title="Drag to reorder; use Up/Down arrow keys" ${phrases.length < 2 ? 'disabled' : ''}>${reorderGrip}</button><label class="visually-hidden" for="${id}">${isValue ? `Matching phrase${i ? ' ' + (i + 1) : ''}` : `Option ${i + 1} phrase`}</label><textarea id="${id}" data-index="${i}" rows="1" maxlength="10000">${escapeHTML(opt.phrase)}</textarea><div class="option-actions"><button class="text-button danger" data-remove="${i}" aria-label="Remove option ${i + 1}">Remove</button></div></div>`;
+  }).join('') : '<p class="empty-state">Add a phrase to this topic.</p>';
   bindBankHandles($('phraseEditor'), '.phrase-edit-row', '[data-phrase-handle]', movePhrase);
   $('phraseEditor').querySelectorAll('textarea').forEach(ta => {
     fitPhraseBox(ta);
     ta.oninput = () => {
-      bankDraft.categories[bankCategory][Number(ta.dataset.index)].phrase = ta.value;
+      activeBankPhrases()[Number(ta.dataset.index)].phrase = ta.value;
+      syncValuePhrase();
       fitPhraseBox(ta);
       bankDirty = true;
       updateBankStatus();
     };
   });
   $('phraseEditor').querySelectorAll('[data-remove]').forEach(button => { button.onclick = () => {
-    bankDraft.categories[bankCategory].splice(Number(button.dataset.remove), 1);
+    activeBankPhrases().splice(Number(button.dataset.remove), 1);
+    syncValuePhrase();
     bankDirty = true;
     renderBank();
   }; });
@@ -1141,7 +1196,10 @@ function renderBank() {
 function resetBankDraft() {
   bankDraft = clone({ categories: state.categories, categoryOrder: state.categoryOrder, topicSettings: state.topicSettings });
   bankDraft.topicOrigins = Object.fromEntries(state.categoryOrder.map(cat => [cat, cat]));
-  for (const cat of bankDraft.categoryOrder) bankDraft.categories[cat].forEach(opt => { opt.original = opt.phrase; });
+  for (const cat of bankDraft.categoryOrder) {
+    bankDraft.categories[cat].forEach(opt => { opt.original = opt.phrase; });
+    bankDraft.topicSettings[cat].phrases.forEach(opt => { opt.original = opt.phrase; });
+  }
   bankDirty = false;
   pendingBankImport = null;
   $('bankImportPreview').hidden = true;
@@ -1149,7 +1207,8 @@ function resetBankDraft() {
 }
 function checkedBankDraft() {
   const categories = Object.fromEntries(bankDraft.categoryOrder.map(cat => [cat, bankDraft.categories[cat].filter(opt => opt.phrase.trim()).map(opt => ({phrase:opt.phrase.trim(), label:opt.label.trim()}))]));
-  return Core.bankFile({categories, categoryOrder:bankDraft.categoryOrder, topicSettings:bankDraft.topicSettings});
+  const topicSettings = Object.fromEntries(bankDraft.categoryOrder.map(cat => [cat, {...bankDraft.topicSettings[cat], phrases:bankDraft.topicSettings[cat].phrases.filter(opt => opt.phrase.trim()).map(opt => ({phrase:opt.phrase.trim(), label:opt.label.trim()}))}]));
+  return Core.bankFile({categories, categoryOrder:bankDraft.categoryOrder, topicSettings});
 }
 function showBankImport(payload, filename) {
   pendingBankImport = payload;
@@ -1195,10 +1254,16 @@ async function applyBankImport(replace) {
       existing.add(cat.toLowerCase());
     }
   }
-  for (const cat of bankDraft.categoryOrder) for (const option of bankDraft.categories[cat]) {
-    const previous = previousDraft.categories[cat]?.find(opt => opt.phrase === option.phrase);
-    if (previous?.original != null) option.original = previous.original;
-    else if (state.categories[bankDraft.topicOrigins[cat]]?.some(opt => opt.phrase === option.phrase)) option.original = option.phrase;
+  for (const cat of bankDraft.categoryOrder) {
+    const source = bankDraft.topicOrigins[cat];
+    for (const [options, previousOptions, savedOptions] of [
+      [bankDraft.categories[cat], previousDraft.categories[cat], state.categories[source]],
+      [bankDraft.topicSettings[cat].phrases, previousDraft.topicSettings[cat]?.phrases, state.topicSettings[source]?.phrases]
+    ]) for (const option of options) {
+      const previous = previousOptions?.find(opt => opt.phrase === option.phrase);
+      if (previous?.original != null) option.original = previous.original;
+      else if (savedOptions?.some(opt => opt.phrase === option.phrase)) option.original = option.phrase;
+    }
   }
   pendingBankImport = null;
   $('bankImportPreview').hidden = true;
@@ -1258,7 +1323,7 @@ function previewImport(payload, filename) {
   const count = (amount, label) => `${amount} ${label}${amount === 1 ? '' : 's'}`;
   const summary = [count(payload.students.length, 'student'), count(comments, 'saved comment'), count(payload.categoryOrder.length, 'topic')].join(' · ');
   $('importPreview').hidden = false;
-  $('importPreview').innerHTML = `<h3>${escapeHTML(payload.className)}</h3><p>${escapeHTML(filename)} · ${summary}</p><p>Includes student details, comments, scores, selections, and the phrase bank. Restoring replaces the current class and supports Undo.</p><div class="actions"><button id="applyImport" class="button primary">Restore class backup</button><button id="cancelClassImport" class="text-button">Cancel</button></div>`;
+  $('importPreview').innerHTML = `<h3>${escapeHTML(payload.className)}</h3><p>${escapeHTML(filename)} · ${summary}</p><p>Includes student details, comments, values, selections, and the phrase bank. Restoring replaces the current class and supports Undo.</p><div class="actions"><button id="applyImport" class="button primary">Restore class backup</button><button id="cancelClassImport" class="text-button">Cancel</button></div>`;
   $('applyImport').onclick = applyImport;
   $('cancelClassImport').onclick = () => {
     pendingImport = null;
@@ -1269,7 +1334,7 @@ function previewImport(payload, filename) {
 async function applyImport() {
   const payload = pendingImport;
   if (!payload) return;
-  const message = 'This replaces your current students, comments, scores, and phrase bank.' + (bankDirty ? ' Unsaved phrase-bank edits will also be replaced.' : '') + ' Export a class backup first to keep a separate copy. You can undo this restore.';
+  const message = 'This replaces your current students, comments, values, and phrase bank.' + (bankDirty ? ' Unsaved phrase-bank edits will also be replaced.' : '') + ' Export a class backup first to keep a separate copy. You can undo this restore.';
   if (!await confirmAction('Restore this class backup?', message, 'Restore backup')) return;
   snapshot('Class backup restored.');
   state = {className:payload.className, students:payload.students, categories:payload.categories, categoryOrder:payload.categoryOrder, topicSettings:payload.topicSettings};
@@ -1314,7 +1379,7 @@ $('finalText').oninput = event => {
 };
 $('useDraft').onclick = async () => {
   const s = current();
-  if (!s || Core.needsScore(s, state)) return;
+  if (!s || Core.needsValue(s, state)) return;
   const draft = Core.draft(s, state);
   if (!draft) return;
   if (s.finalComment.trim() && s.finalComment !== draft && !await confirmAction('Replace your final comment?', 'This replaces the final comment with the current generated draft. You can undo this change.', 'Replace with draft')) return;
@@ -1419,7 +1484,10 @@ for (const [id, offset] of [['previousBankTopic', -1], ['nextBankTopic', 1]]) $(
   ($(id).disabled ? $('bankTopic') : $(id)).focus({preventScroll:true});
 };
 $('topicType').onchange = event => {
-  bankDraft.topicSettings[bankCategory].type = event.target.value;
+  const config = bankDraft.topicSettings[bankCategory];
+  config.type = event.target.value;
+  if (config.type === 'value' && !config.phrases.length) config.phrases = bankDraft.categories[bankCategory].length ? clone(bankDraft.categories[bankCategory]) : [{label:'',phrase:config.phrase}];
+  syncValuePhrase();
   bankDirty = true;
   renderBank();
 };
@@ -1453,13 +1521,12 @@ $('bankTopicName').oninput = event => {
   }
   updateBankStatus();
 };
-for (const [id, key] of Object.entries({valueType:'valueType', valueUnit:'unit', valueMin:'min', valueMax:'max', valuePhrase:'phrase'})) {
+for (const [id, key] of Object.entries({valueType:'valueType', valueUnit:'unit', valueMin:'min', valueMax:'max'})) {
   const input = $(id);
   input.addEventListener(id === 'valueType' ? 'change' : 'input', () => {
     bankDraft.topicSettings[bankCategory][key] = input.value;
     bankDirty = true;
     updateBankStatus();
-    if (id === 'valuePhrase') fitPhraseBox(input);
     if (id === 'valueType') renderBank();
   });
 }
@@ -1491,8 +1558,9 @@ $('categoryForm').onsubmit = event => {
 };
 $('addPhrase').onclick = () => {
   if (!bankCategory) return;
-  if (bankDraft.categories[bankCategory].length >= 100) { toast('Each category can have up to 100 phrases.'); return; }
-  bankDraft.categories[bankCategory].push({ phrase: '[PrefName] ', label: '' });
+  if (activeBankPhrases().length >= 100) { toast('Each topic can have up to 100 phrases.'); return; }
+  activeBankPhrases().push({ phrase: '[PrefName] ', label: '' });
+  syncValuePhrase();
   bankDirty = true;
   renderBank();
   const areas = $('phraseEditor').querySelectorAll('textarea');
@@ -1532,9 +1600,11 @@ $('saveBank').onclick = () => {
       const phrase = s.selections[source];
       const next = validated.topicSettings[cat];
       const previous = state.topicSettings[source];
-      if (next.type === 'value' && (previous.type !== 'value' || previous.phrase !== next.phrase || phrase === previous.phrase)) return [[cat, next.phrase]];
-      const replacement = bankDraft.categories[cat]?.find(opt => opt.original === phrase);
-      return replacement?.phrase.trim() ? [[cat, replacement.phrase.trim()]] : [];
+      const options = next.type === 'value' ? bankDraft.topicSettings[cat].phrases : bankDraft.categories[cat];
+      const replacement = options.find(opt => opt.original === phrase || opt.phrase === phrase);
+      if (replacement?.phrase.trim()) return [[cat, Core.normalizePhrase(replacement.phrase.trim())]];
+      if (next.type === 'value' && previous.type !== 'value') return [[cat, next.phrase]];
+      return [];
     }));
   }
   activeCategory = validated.categoryOrder.find(cat => bankDraft.topicOrigins[cat] === activeCategory) || activeCategory;
@@ -1543,9 +1613,9 @@ $('saveBank').onclick = () => {
   state.categoryOrder = validated.categoryOrder;
   state.topicSettings = validated.topicSettings;
   resetBankDraft();
-  save();
+  const retained = save();
   renderBank();
-  toast('Phrase bank saved. Final comments were kept.');
+  toast(retained ? 'Phrase bank saved. Final comments were kept.' : 'Bank updated for this visit. Export a bank or class backup before leaving.');
 };
 $('exportBank').onclick = () => {
   $('bankFileError').hidden = true;
@@ -1554,6 +1624,7 @@ $('exportBank').onclick = () => {
     toast(bankDirty ? 'Bank exported, including unsaved edits.' : 'Bank exported.');
   } catch (error) { $('bankFileError').textContent = error.message; $('bankFileError').hidden = false; }
 };
+$('loadDefaultBank').onclick = () => showBankImport(Core.bankFile(INITIAL_DATA), 'Default phrase bank');
 $('importBank').onclick = () => {
   $('bankFile').value = '';
   $('bankFileError').hidden = true;
@@ -1629,7 +1700,7 @@ $('importFile').onchange = async event => {
   }
 };
 window.addEventListener('beforeunload', event => {
-  if (bankDirty) { event.preventDefault(); event.returnValue = ''; }
+  if (bankDirty || !storageAvailable) { event.preventDefault(); event.returnValue = ''; }
 });
 window.addEventListener('resize', () => {
   if (!$('bankView').hidden) $('bankView').querySelectorAll('textarea').forEach(fitPhraseBox);

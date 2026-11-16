@@ -3,6 +3,7 @@ const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&
 const STORAGE_KEY = 'report-card-comment-builder-v2';
 const clone = value => JSON.parse(JSON.stringify(value));
 let startupMessage = '';
+let storageAvailable = true;
 let state = Core.validate({ ...INITIAL_DATA, className: 'My class' });
 try {
   const saved = localStorage.getItem(STORAGE_KEY);
@@ -36,14 +37,18 @@ function newStudent() {
 function save() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    $('saveStatus').hidden = true;
-    $('saveStatus').textContent = '';
+    storageAvailable = true;
+    $('saveStatus').textContent = 'Student work saved automatically';
+    $('saveStatus').closest('details').classList.remove('storage-error');
   } catch {
-    $('saveStatus').textContent = 'Device storage is unavailable. Export a backup to keep your work.';
-    $('saveStatus').hidden = false;
+    storageAvailable = false;
+    $('saveStatus').textContent = 'Work is not saved — export a class backup';
+    $('saveStatus').closest('details').classList.add('storage-error');
+    $('saveStatus').closest('details').open = true;
   }
   $('classCount').textContent = state.students.length;
   $('rosterExport').disabled = !state.students.some(s => s.fullName.trim());
+  return storageAvailable;
 }
 function toast(message) {
   clearTimeout(toastTimer);
@@ -109,9 +114,10 @@ function renderWrite() {
   updatePreview();
 }
 function phraseOptions(category, selected) {
-  return `<option value="">Skip this category</option>` + (state.categories[category] || []).map((opt, i) =>
+  return `<option value="">Skip this topic</option>` + topicPhrases(category).map((opt, i) =>
     `<option value="${i}" ${opt.phrase === selected ? 'selected' : ''}>${escapeHTML(`Option ${i + 1}: ${opt.phrase.replace(/\[[^\]]+\]/g, '…')}`)}</option>`).join('');
 }
+function topicPhrases(cat) { return state.topicSettings[cat]?.type === 'value' ? Core.valuePhrases(state.topicSettings[cat]) : state.categories[cat] || []; }
 function valueLabel(topic, config) { return topic + (config.unit ? ` (${config.unit})` : ''); }
 function valueInput(s, cat, id, extra = '') {
   const config = state.topicSettings[cat];
@@ -127,7 +133,7 @@ function setTopicValue(s, cat, input) {
   s.values[cat] = value === '' ? '' : config.valueType === 'number' && Number.isFinite(Number(value)) ? Number(value) : value;
   if (config.type === 'value') {
     if (value === '') delete s.selections[cat];
-    else s.selections[cat] = config.phrase;
+    else if (!Core.valuePhrases(config).some(opt => opt.phrase === s.selections[cat])) s.selections[cat] = Core.valuePhrases(config)[0]?.phrase;
   }
   const error = input.validity.badInput ? 'Enter a number.' : Core.valueError(s.values[cat], config);
   input.setAttribute('aria-invalid', String(!!error));
@@ -140,14 +146,14 @@ function renderCategory() {
   const panel = $('categoryPanel');
   if (!s) { panel.innerHTML = '<p class="empty-state">Add a student to start building comments.</p>'; return; }
   if (!activeCategory) { panel.innerHTML = '<p class="empty-state">Add a topic in the Phrase bank to start building comments.</p>'; return; }
-  const options = state.categories[activeCategory] || [];
+  const options = topicPhrases(activeCategory);
   const config = state.topicSettings[activeCategory];
   const topics = state.categoryOrder;
   const categoryIndex = state.categoryOrder.indexOf(activeCategory);
   panel.innerHTML = `<div class="topic-picker"><div class="field"><div class="topic-label"><label for="topicSelect">Topic</label><span id="topicPosition" class="muted">${categoryIndex + 1} / ${topics.length}</span></div><select id="topicSelect" title="${escapeHTML(activeCategory)}">${topics.map(cat => `<option ${cat === activeCategory ? 'selected' : ''}>${escapeHTML(cat)}</option>`).join('')}</select></div><button id="previousTopic" class="button" aria-label="Previous topic" ${categoryIndex <= 0 ? 'disabled' : ''}>Previous</button><button id="nextTopic" class="button" aria-label="Next topic" ${categoryIndex >= state.categoryOrder.length - 1 ? 'disabled' : ''}>Next</button></div>
-    ${config.type === 'value' ? `<div class="topic-value-entry"><div class="field"><label for="topicValue">${escapeHTML(valueLabel(activeCategory, config))}</label>${valueInput(s, activeCategory, 'topicValue')}</div><button id="skipValue" class="text-button">Skip this topic</button><p id="valuePreview" class="value-preview">${escapeHTML(Core.personalize(s.selections[activeCategory] || config.phrase, s, Core.topicValue(s, activeCategory)))}</p></div>` : `<div class="phrase-options" role="radiogroup" aria-label="${escapeHTML(activeCategory)} phrases">
+    ${config.type === 'value' ? `<div class="topic-value-entry"><div class="field"><label for="topicValue">${escapeHTML(valueLabel(activeCategory, config))}</label>${valueInput(s, activeCategory, 'topicValue')}</div></div>` : ''}<div class="phrase-options" role="radiogroup" aria-label="${escapeHTML(activeCategory)} phrases">
     ${options.map((opt, i) => `<label class="phrase-option ${s.selections[activeCategory] === opt.phrase ? 'chosen' : ''}"><input type="radio" name="phraseChoice" value="${i}" ${s.selections[activeCategory] === opt.phrase ? 'checked' : ''}><span class="phrase-text">${escapeHTML(Core.personalize(opt.phrase, s, Core.topicValue(s, activeCategory), config.unit))}</span></label>`).join('')}
-    <label class="phrase-option ${!s.selections[activeCategory] ? 'chosen' : ''}"><input type="radio" name="phraseChoice" value="" ${!s.selections[activeCategory] ? 'checked' : ''}><span>Skip this topic</span></label></div>`}
+    <label class="phrase-option ${!s.selections[activeCategory] ? 'chosen' : ''}"><input type="radio" name="phraseChoice" value="" ${!s.selections[activeCategory] ? 'checked' : ''}><span>Skip this topic</span></label></div>
     ${config.type !== 'value' && options.some(o => /\[(Score|Value|value)\]/.test(o.phrase)) ? `<div class="field topic-extra-value"><label for="topicValue">${escapeHTML(valueLabel(activeCategory, config))}</label>${valueInput(s, activeCategory, 'topicValue')}</div>` : ''}
     <p id="valueError" class="inline-warning" role="alert" hidden></p>`;
   $('topicSelect').onchange = event => {
@@ -167,7 +173,6 @@ function renderCategory() {
   $('nextTopic').onclick = () => moveTopic(1);
   panel.querySelectorAll('[name="phraseChoice"]').forEach(radio => { radio.onchange = event => choosePhrase(event.target.value); });
   updatePhrasePreviews();
-  if ($('skipValue')) $('skipValue').onclick = () => { $('topicValue').value = ''; $('topicValue').dispatchEvent(new Event('input')); };
   if ($('topicValue')) $('topicValue').oninput = event => {
     const error = setTopicValue(s, activeCategory, event.target);
     $('valueError').textContent = error;
@@ -180,8 +185,10 @@ function renderCategory() {
 function choosePhrase(value) {
   const s = current();
   if (!s) return;
-  if (value === '') delete s.selections[activeCategory];
-  else s.selections[activeCategory] = state.categories[activeCategory][Number(value)].phrase;
+  if (value === '') {
+    delete s.selections[activeCategory];
+    if (state.topicSettings[activeCategory].type === 'value') { s.values[activeCategory] = ''; $('topicValue').value = ''; }
+  } else s.selections[activeCategory] = topicPhrases(activeCategory)[Number(value)].phrase;
   if (s.status === 'Not started' && Object.keys(s.selections).length) s.status = 'Draft';
   document.querySelectorAll('[name="phraseChoice"]').forEach(radio => {
     radio.checked = radio.value === value;
@@ -193,9 +200,12 @@ function choosePhrase(value) {
 }
 function updatePhrasePreviews() {
   if (!current() || !activeCategory) return;
-  const options = state.categories[activeCategory] || [];
+  const options = topicPhrases(activeCategory);
+  $('categoryPanel').querySelectorAll('[name="phraseChoice"]').forEach(radio => {
+    radio.checked = radio.value === '' ? !current().selections[activeCategory] : options[Number(radio.value)]?.phrase === current().selections[activeCategory];
+    radio.closest('label').classList.toggle('chosen', radio.checked);
+  });
   $('categoryPanel').querySelectorAll('.phrase-text').forEach((el, i) => { if (options[i]) el.textContent = Core.personalize(options[i].phrase, current(), Core.topicValue(current(), activeCategory), state.topicSettings[activeCategory].unit); });
-  if ($('valuePreview')) $('valuePreview').textContent = Core.personalize(current().selections[activeCategory] || state.topicSettings[activeCategory].phrase, current(), current().selections[activeCategory] ? Core.topicValue(current(), activeCategory) : '', state.topicSettings[activeCategory].unit);
 }
 function updatePreview() {
   const s = current();
@@ -212,8 +222,8 @@ function updatePreview() {
   $('draftCount').textContent = draft ? `${draft.length} characters` : '';
   const selectedCount = Object.keys(s?.selections || {}).length;
   $('selectionCount').textContent = `${selectedCount} ${selectedCount === 1 ? 'topic' : 'topics'} selected`;
-  $('scoreWarning').hidden = !s || !Core.needsScore(s, state);
-  $('useDraft').disabled = !draft || Core.needsScore(s, state);
+  $('scoreWarning').hidden = !s || !Core.needsValue(s, state);
+  $('useDraft').disabled = !draft || Core.needsValue(s, state);
   $('copyFinal').disabled = !s?.finalComment.trim();
   $('clearFinal').disabled = !s?.finalComment;
   $('markDone').disabled = !s?.finalComment.trim() || !s?.fullName.trim();
@@ -271,7 +281,7 @@ function renderOverview() {
     const comment = category ? Core.topicSentence(s, state, category) : s.finalComment;
     const config = state.topicSettings[category];
     return `<article class="student-row ${category ? 'topic-row' : 'comment-row'}" data-student="${escapeHTML(s.id)}"><h3><button class="student-name" data-open="${escapeHTML(s.id)}" title="${escapeHTML(displayName(s))}" aria-label="Open comment for ${escapeHTML(displayName(s))}">${escapeHTML(displayName(s))}</button></h3><span class="status ${s.status === 'Done' ? 'done' : s.status === 'Draft' ? 'draft' : ''}">${s.status}</span>
-      <div class="row-comment">${category ? config.type === 'value' ? `<label class="visually-hidden" for="overview-value-${escapeHTML(s.id)}">${escapeHTML(valueLabel(category, config))} for ${escapeHTML(displayName(s))}</label>${valueInput(s, category, 'overview-value-' + s.id, `data-overview-value="${escapeHTML(s.id)}"`)}` : `<label class="visually-hidden" for="overview-choice-${escapeHTML(s.id)}">${escapeHTML(category)} phrase for ${escapeHTML(displayName(s))}</label><select id="overview-choice-${escapeHTML(s.id)}" data-choice="${escapeHTML(s.id)}">${phraseOptions(category, selection)}</select>` : `<p class="${comment ? '' : 'muted'}" title="${escapeHTML(comment || 'No final comment yet.')}">${escapeHTML(comment || 'No final comment yet.')}</p>`}</div>
+      <div class="row-comment">${category ? config.type === 'value' ? `<label class="visually-hidden" for="overview-value-${escapeHTML(s.id)}">${escapeHTML(valueLabel(category, config))} for ${escapeHTML(displayName(s))}</label><div class="overview-value-controls"><label class="visually-hidden" for="overview-choice-${escapeHTML(s.id)}">${escapeHTML(category)} matching phrase for ${escapeHTML(displayName(s))}</label><select id="overview-choice-${escapeHTML(s.id)}" data-choice="${escapeHTML(s.id)}">${phraseOptions(category, selection)}</select>${valueInput(s, category, 'overview-value-' + s.id, `data-overview-value="${escapeHTML(s.id)}"`)}</div>` : `<label class="visually-hidden" for="overview-choice-${escapeHTML(s.id)}">${escapeHTML(category)} phrase for ${escapeHTML(displayName(s))}</label><select id="overview-choice-${escapeHTML(s.id)}" data-choice="${escapeHTML(s.id)}">${phraseOptions(category, selection)}</select>` : `<p class="${comment ? '' : 'muted'}" title="${escapeHTML(comment || 'No final comment yet.')}">${escapeHTML(comment || 'No final comment yet.')}</p>`}</div>
       ${category ? '' : `<button class="button row-copy" data-copy-comment="${escapeHTML(s.id)}" aria-label="Copy comment for ${escapeHTML(displayName(s))}" ${s.finalComment.trim() ? '' : 'disabled'}>Copy</button>`}</article>`;
   }).join('') : `<p class="empty-state">${state.students.length ? 'No students match this progress filter.' : 'No students yet.'}</p>`;
   $('overviewList').querySelectorAll('[data-open]').forEach(button => { button.onclick = () => {
@@ -285,8 +295,10 @@ function renderOverview() {
   }; });
   $('overviewList').querySelectorAll('[data-choice]').forEach(select => { select.onchange = () => {
     const s = state.students.find(item => item.id === select.dataset.choice);
-    if (select.value === '') delete s.selections[overviewCategory];
-    else s.selections[overviewCategory] = state.categories[overviewCategory][Number(select.value)].phrase;
+    if (select.value === '') {
+      delete s.selections[overviewCategory];
+      if (state.topicSettings[overviewCategory].type === 'value') s.values[overviewCategory] = '';
+    } else s.selections[overviewCategory] = topicPhrases(overviewCategory)[Number(select.value)].phrase;
     if (s.status === 'Not started' && Object.keys(s.selections).length) s.status = 'Draft';
     save();
     renderOverview();
@@ -297,6 +309,9 @@ function renderOverview() {
     const error = setTopicValue(s, overviewCategory, input);
     input.setCustomValidity(error);
     input.title = error;
+    const select = input.closest('.row-comment').querySelector('[data-choice]');
+    select.value = String(topicPhrases(overviewCategory).findIndex(opt => opt.phrase === s.selections[overviewCategory]));
+    if (!s.selections[overviewCategory]) select.value = '';
     renderClassProgress();
   }; });
 }
@@ -385,7 +400,8 @@ function openStudentEditor() {
   (input || $('addStudent')).focus();
 }
 function updateBankStatus() {
-  $('bankEditStatus').textContent = bankDirty ? 'Unsaved phrase changes' : 'No unsaved changes';
+  $('bankEditStatus').textContent = bankDirty ? 'Unsaved changes — choose Save bank before leaving' : storageAvailable ? 'Bank saved in this browser' : 'Bank not saved — export a bank or class backup';
+  $('bankEditStatus').closest('.bank-save-bar').classList.toggle('has-changes', bankDirty || !storageAvailable);
   const invalidName = !$('bankTopicName').validity.valid;
   $('saveBank').disabled = !bankDirty || invalidName;
   $('exportBank').disabled = invalidName;
@@ -404,11 +420,20 @@ function clearBankDrag() {
   if (drag?.handle.hasPointerCapture?.(drag.pointerId)) drag.handle.releasePointerCapture(drag.pointerId);
   $('bankView').querySelectorAll('.phrase-edit-row, .bank-topic-row').forEach(row => row.classList.remove('dragging', 'drop-before', 'drop-after'));
 }
+function activeBankPhrases() {
+  const config = bankDraft.topicSettings[bankCategory];
+  return config.type === 'value' ? config.phrases : bankDraft.categories[bankCategory];
+}
+function syncValuePhrase() {
+  const config = bankDraft.topicSettings[bankCategory];
+  if (config.type === 'value') config.phrase = config.phrases[0]?.phrase || '';
+}
 function movePhrase(from, to) {
-  const phrases = bankDraft.categories[bankCategory];
+  const phrases = activeBankPhrases();
   if (from === to || from < 0 || to < 0 || from >= phrases.length || to >= phrases.length) return;
   const [phrase] = phrases.splice(from, 1);
   phrases.splice(to, 0, phrase);
+  syncValuePhrase();
   bankDirty = true;
   renderBank();
   $('phraseEditor').querySelector(`[data-phrase-handle="${to}"]`).focus({preventScroll:true});
@@ -464,7 +489,7 @@ function topicDetails(cat) {
     const count = bankDraft.categories[cat].length;
     return `${count} ${count === 1 ? 'option' : 'options'}`;
   }
-  const parts = [config.valueType === 'text' ? 'Text' : 'Number', config.unit];
+  const parts = [config.valueType === 'text' ? 'Text' : 'Number', config.unit, `${config.phrases.length} ${config.phrases.length === 1 ? 'phrase' : 'phrases'}`];
   if (config.valueType === 'number') {
     if (config.min !== '' && config.max !== '') parts.push(`${config.min}–${config.max}`);
     else if (config.min !== '') parts.push(`Min ${config.min}`);
@@ -518,29 +543,34 @@ function renderBank() {
   if (!bankCategory) { updateBankStatus(); return; }
   const config = bankDraft.topicSettings[bankCategory];
   $('topicType').value = config.type;
-  $('bankDefinitionHeading').textContent = config.type === 'value' ? 'Matching phrase' : 'Phrases';
-  const phrases = bankDraft.categories[bankCategory] || [];
-  const usesValue = config.type === 'value' || phrases.some(opt => /\[(Score|Value|value)\]/.test(opt.phrase));
+  const isValue = config.type === 'value';
+  $('bankDefinitionHeading').textContent = isValue ? 'Matching phrases' : 'Phrases';
+  const phrases = activeBankPhrases();
+  const usesValue = isValue || phrases.some(opt => /\[Value\]/.test(opt.phrase));
   $('valueSettings').hidden = !usesValue;
-  $('valuePhrase').closest('.field').hidden = config.type !== 'value';
-  for (const [id, key] of Object.entries({valueType:'valueType',valueUnit:'unit',valueMin:'min',valueMax:'max',valuePhrase:'phrase'})) $(id).value = config[key];
+  $('valuePhraseHelp').hidden = !isValue;
+  for (const [id, key] of Object.entries({valueType:'valueType',valueUnit:'unit',valueMin:'min',valueMax:'max'})) $(id).value = config[key];
   document.querySelectorAll('.number-setting').forEach(field => { field.hidden = config.valueType !== 'number'; });
-  fitPhraseBox($('valuePhrase'));
-  $('phraseEditor').hidden = config.type === 'value';
-  $('addPhrase').hidden = config.type === 'value';
-  $('phraseEditor').innerHTML = phrases.length ? phrases.map((opt, i) => `<div class="phrase-edit-row"><button class="phrase-grip" data-phrase-handle="${i}" data-reorder-index="${i}" aria-label="Reorder phrase ${i + 1}" aria-describedby="phraseOrderHelp" aria-keyshortcuts="ArrowUp ArrowDown" title="Drag to reorder; use Up/Down arrow keys" ${phrases.length < 2 ? 'disabled' : ''}>${reorderGrip}</button><label class="visually-hidden" for="phrase-${i}">Option ${i + 1} phrase</label><textarea id="phrase-${i}" data-index="${i}" rows="1" maxlength="10000">${escapeHTML(opt.phrase)}</textarea><div class="option-actions"><button class="text-button danger" data-remove="${i}" aria-label="Remove option ${i + 1}">Remove</button></div></div>`).join('') : '<p class="empty-state">Add a phrase to this topic.</p>';
+  $('addPhrase').hidden = false;
+  $('addPhrase').textContent = isValue ? 'Add matching phrase' : 'Add phrase';
+  $('phraseEditor').innerHTML = phrases.length ? phrases.map((opt, i) => {
+    const id = isValue ? (i ? `valuePhrase-${i}` : 'valuePhrase') : `phrase-${i}`;
+    return `<div class="field phrase-edit-row"><button class="phrase-grip" data-phrase-handle="${i}" data-reorder-index="${i}" aria-label="Reorder phrase ${i + 1}" aria-describedby="phraseOrderHelp" aria-keyshortcuts="ArrowUp ArrowDown" title="Drag to reorder; use Up/Down arrow keys" ${phrases.length < 2 ? 'disabled' : ''}>${reorderGrip}</button><label class="visually-hidden" for="${id}">${isValue ? `Matching phrase${i ? ' ' + (i + 1) : ''}` : `Option ${i + 1} phrase`}</label><textarea id="${id}" data-index="${i}" rows="1" maxlength="10000">${escapeHTML(opt.phrase)}</textarea><div class="option-actions"><button class="text-button danger" data-remove="${i}" aria-label="Remove option ${i + 1}">Remove</button></div></div>`;
+  }).join('') : '<p class="empty-state">Add a phrase to this topic.</p>';
   bindBankHandles($('phraseEditor'), '.phrase-edit-row', '[data-phrase-handle]', movePhrase);
   $('phraseEditor').querySelectorAll('textarea').forEach(ta => {
     fitPhraseBox(ta);
     ta.oninput = () => {
-      bankDraft.categories[bankCategory][Number(ta.dataset.index)].phrase = ta.value;
+      activeBankPhrases()[Number(ta.dataset.index)].phrase = ta.value;
+      syncValuePhrase();
       fitPhraseBox(ta);
       bankDirty = true;
       updateBankStatus();
     };
   });
   $('phraseEditor').querySelectorAll('[data-remove]').forEach(button => { button.onclick = () => {
-    bankDraft.categories[bankCategory].splice(Number(button.dataset.remove), 1);
+    activeBankPhrases().splice(Number(button.dataset.remove), 1);
+    syncValuePhrase();
     bankDirty = true;
     renderBank();
   }; });
@@ -550,7 +580,10 @@ function renderBank() {
 function resetBankDraft() {
   bankDraft = clone({ categories: state.categories, categoryOrder: state.categoryOrder, topicSettings: state.topicSettings });
   bankDraft.topicOrigins = Object.fromEntries(state.categoryOrder.map(cat => [cat, cat]));
-  for (const cat of bankDraft.categoryOrder) bankDraft.categories[cat].forEach(opt => { opt.original = opt.phrase; });
+  for (const cat of bankDraft.categoryOrder) {
+    bankDraft.categories[cat].forEach(opt => { opt.original = opt.phrase; });
+    bankDraft.topicSettings[cat].phrases.forEach(opt => { opt.original = opt.phrase; });
+  }
   bankDirty = false;
   pendingBankImport = null;
   $('bankImportPreview').hidden = true;
@@ -558,7 +591,8 @@ function resetBankDraft() {
 }
 function checkedBankDraft() {
   const categories = Object.fromEntries(bankDraft.categoryOrder.map(cat => [cat, bankDraft.categories[cat].filter(opt => opt.phrase.trim()).map(opt => ({phrase:opt.phrase.trim(), label:opt.label.trim()}))]));
-  return Core.bankFile({categories, categoryOrder:bankDraft.categoryOrder, topicSettings:bankDraft.topicSettings});
+  const topicSettings = Object.fromEntries(bankDraft.categoryOrder.map(cat => [cat, {...bankDraft.topicSettings[cat], phrases:bankDraft.topicSettings[cat].phrases.filter(opt => opt.phrase.trim()).map(opt => ({phrase:opt.phrase.trim(), label:opt.label.trim()}))}]));
+  return Core.bankFile({categories, categoryOrder:bankDraft.categoryOrder, topicSettings});
 }
 function showBankImport(payload, filename) {
   pendingBankImport = payload;
@@ -604,10 +638,16 @@ async function applyBankImport(replace) {
       existing.add(cat.toLowerCase());
     }
   }
-  for (const cat of bankDraft.categoryOrder) for (const option of bankDraft.categories[cat]) {
-    const previous = previousDraft.categories[cat]?.find(opt => opt.phrase === option.phrase);
-    if (previous?.original != null) option.original = previous.original;
-    else if (state.categories[bankDraft.topicOrigins[cat]]?.some(opt => opt.phrase === option.phrase)) option.original = option.phrase;
+  for (const cat of bankDraft.categoryOrder) {
+    const source = bankDraft.topicOrigins[cat];
+    for (const [options, previousOptions, savedOptions] of [
+      [bankDraft.categories[cat], previousDraft.categories[cat], state.categories[source]],
+      [bankDraft.topicSettings[cat].phrases, previousDraft.topicSettings[cat]?.phrases, state.topicSettings[source]?.phrases]
+    ]) for (const option of options) {
+      const previous = previousOptions?.find(opt => opt.phrase === option.phrase);
+      if (previous?.original != null) option.original = previous.original;
+      else if (savedOptions?.some(opt => opt.phrase === option.phrase)) option.original = option.phrase;
+    }
   }
   pendingBankImport = null;
   $('bankImportPreview').hidden = true;
@@ -667,7 +707,7 @@ function previewImport(payload, filename) {
   const count = (amount, label) => `${amount} ${label}${amount === 1 ? '' : 's'}`;
   const summary = [count(payload.students.length, 'student'), count(comments, 'saved comment'), count(payload.categoryOrder.length, 'topic')].join(' · ');
   $('importPreview').hidden = false;
-  $('importPreview').innerHTML = `<h3>${escapeHTML(payload.className)}</h3><p>${escapeHTML(filename)} · ${summary}</p><p>Includes student details, comments, scores, selections, and the phrase bank. Restoring replaces the current class and supports Undo.</p><div class="actions"><button id="applyImport" class="button primary">Restore class backup</button><button id="cancelClassImport" class="text-button">Cancel</button></div>`;
+  $('importPreview').innerHTML = `<h3>${escapeHTML(payload.className)}</h3><p>${escapeHTML(filename)} · ${summary}</p><p>Includes student details, comments, values, selections, and the phrase bank. Restoring replaces the current class and supports Undo.</p><div class="actions"><button id="applyImport" class="button primary">Restore class backup</button><button id="cancelClassImport" class="text-button">Cancel</button></div>`;
   $('applyImport').onclick = applyImport;
   $('cancelClassImport').onclick = () => {
     pendingImport = null;
@@ -678,7 +718,7 @@ function previewImport(payload, filename) {
 async function applyImport() {
   const payload = pendingImport;
   if (!payload) return;
-  const message = 'This replaces your current students, comments, scores, and phrase bank.' + (bankDirty ? ' Unsaved phrase-bank edits will also be replaced.' : '') + ' Export a class backup first to keep a separate copy. You can undo this restore.';
+  const message = 'This replaces your current students, comments, values, and phrase bank.' + (bankDirty ? ' Unsaved phrase-bank edits will also be replaced.' : '') + ' Export a class backup first to keep a separate copy. You can undo this restore.';
   if (!await confirmAction('Restore this class backup?', message, 'Restore backup')) return;
   snapshot('Class backup restored.');
   state = {className:payload.className, students:payload.students, categories:payload.categories, categoryOrder:payload.categoryOrder, topicSettings:payload.topicSettings};
@@ -723,7 +763,7 @@ $('finalText').oninput = event => {
 };
 $('useDraft').onclick = async () => {
   const s = current();
-  if (!s || Core.needsScore(s, state)) return;
+  if (!s || Core.needsValue(s, state)) return;
   const draft = Core.draft(s, state);
   if (!draft) return;
   if (s.finalComment.trim() && s.finalComment !== draft && !await confirmAction('Replace your final comment?', 'This replaces the final comment with the current generated draft. You can undo this change.', 'Replace with draft')) return;
@@ -828,7 +868,10 @@ for (const [id, offset] of [['previousBankTopic', -1], ['nextBankTopic', 1]]) $(
   ($(id).disabled ? $('bankTopic') : $(id)).focus({preventScroll:true});
 };
 $('topicType').onchange = event => {
-  bankDraft.topicSettings[bankCategory].type = event.target.value;
+  const config = bankDraft.topicSettings[bankCategory];
+  config.type = event.target.value;
+  if (config.type === 'value' && !config.phrases.length) config.phrases = bankDraft.categories[bankCategory].length ? clone(bankDraft.categories[bankCategory]) : [{label:'',phrase:config.phrase}];
+  syncValuePhrase();
   bankDirty = true;
   renderBank();
 };
@@ -862,13 +905,12 @@ $('bankTopicName').oninput = event => {
   }
   updateBankStatus();
 };
-for (const [id, key] of Object.entries({valueType:'valueType', valueUnit:'unit', valueMin:'min', valueMax:'max', valuePhrase:'phrase'})) {
+for (const [id, key] of Object.entries({valueType:'valueType', valueUnit:'unit', valueMin:'min', valueMax:'max'})) {
   const input = $(id);
   input.addEventListener(id === 'valueType' ? 'change' : 'input', () => {
     bankDraft.topicSettings[bankCategory][key] = input.value;
     bankDirty = true;
     updateBankStatus();
-    if (id === 'valuePhrase') fitPhraseBox(input);
     if (id === 'valueType') renderBank();
   });
 }
@@ -900,8 +942,9 @@ $('categoryForm').onsubmit = event => {
 };
 $('addPhrase').onclick = () => {
   if (!bankCategory) return;
-  if (bankDraft.categories[bankCategory].length >= 100) { toast('Each category can have up to 100 phrases.'); return; }
-  bankDraft.categories[bankCategory].push({ phrase: '[PrefName] ', label: '' });
+  if (activeBankPhrases().length >= 100) { toast('Each topic can have up to 100 phrases.'); return; }
+  activeBankPhrases().push({ phrase: '[PrefName] ', label: '' });
+  syncValuePhrase();
   bankDirty = true;
   renderBank();
   const areas = $('phraseEditor').querySelectorAll('textarea');
@@ -941,9 +984,11 @@ $('saveBank').onclick = () => {
       const phrase = s.selections[source];
       const next = validated.topicSettings[cat];
       const previous = state.topicSettings[source];
-      if (next.type === 'value' && (previous.type !== 'value' || previous.phrase !== next.phrase || phrase === previous.phrase)) return [[cat, next.phrase]];
-      const replacement = bankDraft.categories[cat]?.find(opt => opt.original === phrase);
-      return replacement?.phrase.trim() ? [[cat, replacement.phrase.trim()]] : [];
+      const options = next.type === 'value' ? bankDraft.topicSettings[cat].phrases : bankDraft.categories[cat];
+      const replacement = options.find(opt => opt.original === phrase || opt.phrase === phrase);
+      if (replacement?.phrase.trim()) return [[cat, Core.normalizePhrase(replacement.phrase.trim())]];
+      if (next.type === 'value' && previous.type !== 'value') return [[cat, next.phrase]];
+      return [];
     }));
   }
   activeCategory = validated.categoryOrder.find(cat => bankDraft.topicOrigins[cat] === activeCategory) || activeCategory;
@@ -952,9 +997,9 @@ $('saveBank').onclick = () => {
   state.categoryOrder = validated.categoryOrder;
   state.topicSettings = validated.topicSettings;
   resetBankDraft();
-  save();
+  const retained = save();
   renderBank();
-  toast('Phrase bank saved. Final comments were kept.');
+  toast(retained ? 'Phrase bank saved. Final comments were kept.' : 'Bank updated for this visit. Export a bank or class backup before leaving.');
 };
 $('exportBank').onclick = () => {
   $('bankFileError').hidden = true;
@@ -963,6 +1008,7 @@ $('exportBank').onclick = () => {
     toast(bankDirty ? 'Bank exported, including unsaved edits.' : 'Bank exported.');
   } catch (error) { $('bankFileError').textContent = error.message; $('bankFileError').hidden = false; }
 };
+$('loadDefaultBank').onclick = () => showBankImport(Core.bankFile(INITIAL_DATA), 'Default phrase bank');
 $('importBank').onclick = () => {
   $('bankFile').value = '';
   $('bankFileError').hidden = true;
@@ -1038,7 +1084,7 @@ $('importFile').onchange = async event => {
   }
 };
 window.addEventListener('beforeunload', event => {
-  if (bankDirty) { event.preventDefault(); event.returnValue = ''; }
+  if (bankDirty || !storageAvailable) { event.preventDefault(); event.returnValue = ''; }
 });
 window.addEventListener('resize', () => {
   if (!$('bankView').hidden) $('bankView').querySelectorAll('textarea').forEach(fitPhraseBox);

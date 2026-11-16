@@ -11,7 +11,8 @@
   <a class="skip-link" href="#main">Skip to comments</a>
   <div class="app">
     <header class="app-header">
-      <div><h1>Report Card Comment Builder</h1><p id="saveStatus" role="status" hidden></p></div>
+      <h1>Report Card Comment Builder</h1>
+      <details class="storage-help"><summary><span id="saveStatus" role="status">Student work saves automatically</span></summary><p>Comments, selections, values, and student details stay in this browser after you close it or turn off your computer. Return to this site in the same browser and profile—no import needed.</p><p>Use a regular window, not private browsing. Export a class backup from Class overview to move your work or protect against cleared browser data. Work is not synced between devices.</p><p>Phrase-bank edits need <strong>Save bank</strong> before you leave.</p></details>
     </header>
     <nav class="main-nav" aria-label="Main navigation">
       <button class="nav-link active" data-view="write" aria-current="page">Write comments</button>
@@ -65,7 +66,7 @@
         <div id="rosterPanel" role="region" aria-label="Student roster" tabindex="0"><div id="rosterList"></div></div>
       </section>
       <section id="bankView" aria-labelledby="bankHeading" hidden>
-        <div class="page-heading bank-heading"><h2 id="bankHeading">Phrase bank</h2><div class="actions"><button id="exportBank" class="button">Export bank</button><button id="importBank" class="button">Import bank</button><button id="addCategory" class="button primary">Add topic</button></div></div>
+        <div class="page-heading bank-heading"><h2 id="bankHeading">Phrase bank</h2><div class="actions"><button id="loadDefaultBank" class="text-button">Load default bank</button><button id="exportBank" class="button">Export bank</button><button id="importBank" class="button">Import bank</button><button id="addCategory" class="button primary">Add topic</button></div></div>
         <input id="bankFile" class="visually-hidden" type="file" accept=".json,application/json" aria-label="Choose a phrase bank file" tabindex="-1">
         <p id="bankFileError" class="inline-warning" role="alert" hidden></p>
         <section id="bankImportPreview" class="bank-import-preview" aria-label="Bank import preview" hidden></section>
@@ -89,8 +90,8 @@
             <div class="field number-setting"><label for="valueMax">Maximum</label><input id="valueMax" type="number" step="any" placeholder="None"></div>
           </div>
           </section>
-          <div class="bank-definition-heading"><h3 id="bankDefinitionHeading">Phrases</h3><details class="token-help"><summary>Phrase tokens</summary><p class="helper tokens"><code>[FullName]</code> <code>[PrefName]</code> <code>[HeShe]</code> <code>[HeSheThey]</code> <code>[HisHerTheir]</code> <code>[HimHerThem]</code> <code>[Value]</code> <span>[Score] also works in older phrases.</span></p></details></div>
-          <div class="field value-template"><label for="valuePhrase" class="visually-hidden">Matching phrase</label><textarea id="valuePhrase" rows="1" maxlength="10000" placeholder="[HeShe] has a Fluency score of [Value]%."></textarea><p class="helper">Use [Value] where the entry belongs. Leave a student's entry blank to skip it.</p></div>
+          <div class="bank-definition-heading"><h3 id="bankDefinitionHeading">Phrases</h3><details class="token-help"><summary>Phrase tokens</summary><p class="helper tokens"><code>[FullName]</code> <code>[PrefName]</code> <code>[HeShe]</code> <code>[HeSheThey]</code> <code>[HisHerTheir]</code> <code>[HimHerThem]</code> <code>[Value]</code></p></details></div>
+          <p id="valuePhraseHelp" class="helper" hidden>Choose a matching phrase for each student. Use [Value] wherever their entry should appear. Blank entries skip this topic.</p>
           <div id="phraseEditor"></div>
           <p id="phraseOrderHelp" class="visually-hidden">Drag a phrase handle to reorder. With the handle focused, use Up or Down arrow keys to move the phrase. Press Escape to cancel a drag. Save the bank to keep changes.</p>
           <p id="phraseOrderAnnouncement" class="visually-hidden" role="status"></p>

@@ -9,7 +9,7 @@ test('preserves all original students and the 16 categories', () => {
   assert.equal(state.students.length, 4);
   assert.equal(state.categoryOrder.length, 16);
   assert.equal(state.students[0].fullName, original.students[0].fullName);
-  assert.deepEqual(state.categories, original.categories);
+  assert.deepEqual(state.categories, Core.bank(original.categories, original.categoryOrder).categories);
 });
 test('roster export contains identities only, never teacher work', () => {
   const state = fixture();
@@ -116,7 +116,7 @@ test('missing scores remain visibly unresolved and zero is valid', () => {
   s.selections = { Fluency: '[PrefName] scored [Score]%.' };
   s.fluencyScore = '';
   assert.equal(Core.needsScore(s), true);
-  assert.match(Core.personalize(s.selections.Fluency, s), /\[Score\]/);
+  assert.match(Core.personalize(s.selections.Fluency, s), /\[Value\]/);
   s.fluencyScore = 0;
   assert.equal(Core.needsScore(s), false);
 });
@@ -140,7 +140,7 @@ test('legacy fluency becomes a configurable value topic without losing old phras
   assert.equal(state.topicSettings.Fluency.type, 'value');
   assert.equal(state.topicSettings.Fluency.unit, '%');
   assert.equal(Core.topicValue(state.students[0], 'Fluency'), 60);
-  assert.deepEqual(state.categories.Fluency, original.categories.Fluency);
+  assert.deepEqual(state.categories.Fluency, Core.bank(original.categories, original.categoryOrder).categories.Fluency);
   assert.match(Core.draft(state.students[0], state), /60%/);
 });
 test('independent number and text entries survive backups and stay out of shared rosters', () => {
@@ -154,7 +154,7 @@ test('independent number and text entries survive backups and stay out of shared
   s.values = {Reading:0, Project:'a solar system model'};
   s.selections = {Reading:state.topicSettings.Reading.phrase, Project:state.topicSettings.Project.phrase};
   const restored = Core.validate(Core.backup(state));
-  assert.deepEqual(restored.topicSettings, state.topicSettings);
+  assert.deepEqual(restored.topicSettings, Core.bank(state.categories,state.categoryOrder,state.topicSettings).topicSettings);
   assert.match(Core.draft(restored.students[0], restored), /She reads 0 words per minute\. Addy completed a solar system model\./);
   assert.equal('values' in Core.roster(state).students[0], false);
   assert.deepEqual(Core.mergeRoster([], state.students).students[0].values, {});
@@ -194,7 +194,7 @@ test('bank-only exports round trip definitions and order without any class or st
   const restored = Core.bankFile(JSON.parse(JSON.stringify(exported)));
   assert.deepEqual(restored.categories, state.categories);
   assert.deepEqual(restored.categoryOrder, state.categoryOrder);
-  assert.deepEqual(restored.topicSettings, state.topicSettings);
+  assert.deepEqual(restored.topicSettings, Core.bank(state.categories,state.categoryOrder,state.topicSettings).topicSettings);
   assert.deepEqual(Core.bankFile(Core.backup(state)), restored);
 });
 test('bank imports validate files and normalize older selection types', () => {
@@ -202,7 +202,7 @@ test('bank imports validate files and normalize older selection types', () => {
     const b = Core.bankFile({categories:{Effort:[{phrase:'[PrefName] tries.'}]}, topicSettings:{Effort:{type}}});
     assert.equal(b.topicSettings.Effort.type, 'selection');
   }
-  for (const payload of [null, {}, {version:99,categories:{}}, {kind:'roster',categories:{}}, {categories:{Bad:'bad'}}, {categories:{Rate:[]},topicSettings:{Rate:{type:'value',phrase:'No placeholder.'}}}]) assert.throws(()=>Core.bankFile(payload));
+  for (const payload of [null, {}, {version:99,categories:{}}, {kind:'roster',categories:{}}, {categories:{Bad:'bad'}}, {categories:{Rate:[]},topicSettings:{Rate:{type:'value',phrases:[]}}}]) assert.throws(()=>Core.bankFile(payload));
 });
 test('configured units accompany values exactly once without altering stored numbers', () => {
   const s = fixture().students[0];
@@ -211,4 +211,48 @@ test('configured units accompany values exactly once without altering stored num
   assert.equal(Core.personalize('[PrefName] reads [Value].', s, 120, 'words/min'), 'Addy reads 120 words/min.');
   assert.equal(Core.personalize('[PrefName] reads [Value] words per minute.', s, 120, 'words/min'), 'Addy reads 120 words per minute.');
   assert.equal(Core.personalize('[PrefName] measured [Value] more than before.', s, 2, 'm'), 'Addy measured 2 m more than before.');
+});
+
+test('the starting bank matches Kelly’s supplied topics and wording with canonical Value tokens', () => {
+  const raw = require('./fixtures/kelly-phrase-bank.json');
+  const defaults = require('../src/default-bank.json');
+  assert.deepEqual(defaults, Core.bankFile(raw));
+  assert.equal(defaults.categoryOrder.length, 14);
+  assert.equal(defaults.categoryOrder[0], 'Beginning');
+  assert.equal(defaults.categoryOrder.at(-1), 'Ending');
+  assert.equal(defaults.topicSettings['Fact Fluency'].type, 'selection');
+  assert.match(defaults.categories.Beginning[0].phrase, /excellent first trimester/);
+  assert.equal(JSON.stringify(defaults).includes('[Score]'), false);
+  assert.equal(defaults.categories.Collaboration[1].phrase.startsWith('[HeShe] regularly'), true);
+});
+test('multiple value phrases and per-student choices survive bank and class transfers', () => {
+  const state = fixture();
+  state.categories.Math = [];
+  state.categoryOrder.push('Math');
+  state.topicSettings.Math = {type:'value',valueType:'number',unit:'%',min:0,max:100,phrases:[{phrase:'[HeShe] needs division help at [Score]%.'},{phrase:'[HeShe] needs multiplication help at [Value].'}]};
+  state.students[0].values.Math = 50;
+  state.students[0].selections = {Math:state.topicSettings.Math.phrases[0].phrase};
+  state.students[1].values.Math = 0;
+  state.students[1].selections = {Math:state.topicSettings.Math.phrases[1].phrase};
+  const restored = Core.validate(Core.backup(state));
+  assert.match(Core.draft(restored.students[0], restored), /division help at 50%/);
+  assert.match(Core.draft(restored.students[1], restored), /multiplication help at 0%/);
+  assert.equal(restored.students[0].selections.Math.includes('[Value]'), true);
+  assert.equal(restored.topicSettings.Math.phrase, restored.topicSettings.Math.phrases[0].phrase);
+  assert.deepEqual(Core.bankFile(Core.exportBank(restored)).topicSettings.Math, restored.topicSettings.Math);
+});
+test('Value Entry allows matching phrases without a token and still requires a valid entry', () => {
+  const state = fixture();
+  const bank = Core.bankFile({categories:{Math:[]},topicSettings:{Math:{type:'value',unit:'%',min:0,max:100,phrases:[{phrase:'[HeShe] needs help in division.'},{phrase:'[HeShe] needs help in multiplication.'}]}}});
+  Object.assign(state, bank);
+  const s = state.students[0];
+  s.selections = {Math:bank.topicSettings.Math.phrases[1].phrase};
+  assert.equal(Core.needsValue(s,state), true);
+  s.values.Math = 0;
+  assert.equal(Core.needsValue(s,state), false);
+  assert.match(Core.draft(s,state), /She needs help in multiplication/);
+  s.values.Math = 101;
+  assert.equal(Core.needsValue(s,state), true);
+  assert.throws(() => Core.bankFile({categories:{Math:[]},topicSettings:{Math:{type:'value',phrases:[{phrase:' '}]}}}), /matching phrase text/);
+  assert.equal(Core.personalize('[HeShe] achieved [Value]%.',s,'50%','%'), 'She achieved 50%.');
 });

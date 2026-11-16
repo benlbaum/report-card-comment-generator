@@ -219,7 +219,8 @@ function updatePreview() {
     }).join(' ');
   } else $('draftBox').textContent = 'Choose a phrase to start.';
   $('draftBox').classList.toggle('empty', !draft);
-  $('draftCount').textContent = draft ? `${draft.length} characters` : '';
+  $('draftCount').textContent = draft ? characterCount(draft.length) : '';
+  $('draftCount').classList.toggle('over-limit', draft.length > 1000);
   const selectedCount = Object.keys(s?.selections || {}).length;
   $('selectionCount').textContent = `${selectedCount} ${selectedCount === 1 ? 'topic' : 'topics'} selected`;
   $('scoreWarning').hidden = !s || !Core.needsValue(s, state);
@@ -228,11 +229,17 @@ function updatePreview() {
   $('clearFinal').disabled = !s?.finalComment;
   $('markDone').disabled = !s?.finalComment.trim() || !s?.fullName.trim();
   const length = s?.finalComment.length || 0;
-  $('charCount').textContent = `${length.toLocaleString()} / 1,000 characters${length > 1000 ? ' · Over limit' : ''}`;
+  $('charCount').textContent = characterCount(length);
   $('charCount').classList.toggle('over-limit', length > 1000);
+  $('commentLimitWarning').hidden = length <= 1000;
+  $('finalText').setAttribute('aria-describedby', length > 1000 ? 'charCount commentLimitWarning' : 'charCount');
+  $('finalText').classList.toggle('over-limit', length > 1000);
   $('studentStatus').textContent = s?.status || 'Not started';
   $('studentStatus').className = 'visually-hidden';
   $('writeHeading').textContent = s?.fullName ? `${s.prefName || s.fullName.split(' ')[0]}’s comment` : 'Comment';
+}
+function characterCount(length) {
+  return `${length.toLocaleString()} / 1,000 characters${length > 1000 ? ` · ${(length - 1000).toLocaleString()} over limit` : ''}`;
 }
 function moveStudent(offset) {
   const index = state.students.findIndex(s => s.id === currentId);

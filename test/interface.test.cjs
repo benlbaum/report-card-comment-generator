@@ -1391,3 +1391,46 @@ test('importing a multi-phrase value bank preserves compatible per-student choic
   assert.equal(ui.document.querySelectorAll('[name="phraseChoice"]').length,3);
   assert.match(ui.$('draftBox').textContent,/multiplication help at 50%/);
 });
+
+test('main comment counter warns above 1000 without limiting editing, copying, saving or progress', t => {
+  const ui = setup(t);
+  assert.equal(ui.$('finalText').hasAttribute('maxlength'),false);
+  assert.equal(ui.$('finalText').getAttribute('aria-describedby'),'charCount');
+  for (const length of [999,1000,1050]) {
+    const comment = 'a'.repeat(length);
+    ui.change('finalText',comment,'input');
+    assert.match(ui.$('charCount').textContent,new RegExp(length.toLocaleString()+' / 1,000 characters'));
+    assert.equal(ui.$('commentLimitWarning').hidden,length<=1000);
+    assert.equal(ui.$('finalText').getAttribute('aria-describedby'),length>1000 ? 'charCount commentLimitWarning' : 'charCount');
+    assert.equal(ui.$('charCount').classList.contains('over-limit'),length>1000);
+    assert.equal(ui.$('finalText').value,comment);
+    assert.equal(ui.saved().students[0].finalComment,comment);
+    assert.equal(ui.$('copyFinal').disabled,false);
+    assert.equal(ui.$('markDone').disabled,false);
+  }
+  assert.match(ui.$('charCount').textContent,/50 over limit/);
+  ui.$('nextStudent').click();
+  assert.equal(ui.$('charCount').textContent,'0 / 1,000 characters');
+  assert.equal(ui.$('commentLimitWarning').hidden,true);
+  ui.$('prevStudent').click();
+  assert.match(ui.$('charCount').textContent,/50 over limit/);
+  const reopened = setup(t,ui.saved());
+  assert.match(reopened.$('charCount').textContent,/50 over limit/);
+  reopened.change('finalText','a'.repeat(1000),'input');
+  assert.equal(reopened.$('commentLimitWarning').hidden,true);
+  assert.equal(reopened.$('finalText').classList.contains('over-limit'),false);
+});
+test('an over-limit live draft can still be used and trimmed in the final editor', t => {
+  const state = Core.validate(original);
+  const phrase = 'A'.repeat(1001);
+  state.categories.Beginning = [{label:'',phrase}];
+  const ui = setup(t,state);
+  ui.choose('0');
+  assert.match(ui.$('draftCount').textContent,/1,001 \/ 1,000 characters · 1 over limit/);
+  assert.equal(ui.$('draftCount').classList.contains('over-limit'),true);
+  assert.equal(ui.$('useDraft').disabled,false);
+  ui.$('useDraft').click();
+  assert.equal(ui.$('finalText').value,phrase);
+  assert.equal(ui.$('commentLimitWarning').hidden,false);
+  assert.equal(ui.saved().students[0].finalComment,phrase);
+});

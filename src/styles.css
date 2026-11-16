@@ -128,8 +128,11 @@ main { padding: 0 0 24px; margin-inline: -40px; }
 .draft-actions .button { min-height: 36px; padding: 7px 12px; font-size: .8125rem; }
 .draft-section .muted { color: #6c5d75; font-size: .75rem; }
 .final-section textarea { min-height: 250px; font-size: .9375rem; }
-.final-meta { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 4px 0 18px; color: var(--muted); font-size: .75rem; font-variant-numeric: tabular-nums; }
+.final-meta { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 0 0 8px; color: var(--muted); font-size: .8125rem; font-variant-numeric: tabular-nums; }
 .over-limit { color: var(--danger); font-weight: 600; }
+.draft-section .over-limit { color: var(--danger); }
+.final-section textarea.over-limit { color: var(--ink); font-weight: 400; border-color: var(--danger); }
+.final-section > .actions { margin-top: 12px; }
 .status { display: inline-block; padding: 3px 8px; border-radius: 4px; background: #eeebf1; color: #655a6e; font-size: .75rem; white-space: nowrap; font-weight: 600; }
 .status.done { background: #e0efe6; color: #2c6545; }
 .status.draft { background: #fbefcf; color: #795812; }

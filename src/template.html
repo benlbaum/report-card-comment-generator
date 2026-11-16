@@ -41,8 +41,9 @@
               <div class="draft-actions"><button id="useDraft" class="button">Use draft</button><span id="selectionCount" class="muted"></span></div>
             </section>
             <section class="final-section" aria-labelledby="finalHeading">
-              <textarea id="finalText" rows="10" placeholder="Write or edit your comment…"></textarea>
               <div class="final-meta"><span id="charCount">0 / 1,000 characters</span><button id="clearFinal" class="text-button">Clear</button></div>
+              <p id="commentLimitWarning" class="inline-warning" role="status" hidden>Over the 1,000-character limit. You can keep editing; trim the comment before submitting it.</p>
+              <textarea id="finalText" rows="10" aria-describedby="charCount" placeholder="Write or edit your comment…"></textarea>
               <div class="actions"><button id="copyFinal" class="button primary">Copy final comment</button><button id="markDone" class="button">Mark done &amp; next</button></div>
             </section>
           </aside>
